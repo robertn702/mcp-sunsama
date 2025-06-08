@@ -55,7 +55,6 @@ The server maintains session state per MCP connection, so you only need to authe
 // TODO: Add task tools (get-tasks-by-day, get-tasks-backlog)
 // TODO: Add stream tools (get-streams)
 
-// TODO: Add resource for API documentation
 server.addResource({
   uri: "sunsama://api/docs",
   name: "Sunsama API Documentation",
@@ -63,40 +62,107 @@ server.addResource({
   mimeType: "text/markdown",
   load: async () => {
     return {
-      text: `# Sunsama API Documentation
+      text: `# Sunsama MCP Server Documentation
 
-## Available Operations
+## Overview
+This MCP server provides access to the Sunsama API for task and project management.
+Authentication is handled server-side using environment variables.
 
-### Authentication
-- **login**: Authenticate with email and password
-- **logout**: Clear the current session
-- **is-authenticated**: Check if currently authenticated
+## Authentication
+The server authenticates to Sunsama using environment variables:
+- \`SUNSAMA_EMAIL\`: Your Sunsama account email
+- \`SUNSAMA_PASSWORD\`: Your Sunsama account password
+
+Authentication happens automatically on server startup. No client-side authentication is required.
+
+## Available Tools
 
 ### User Operations
-- **get-user**: Get current user information including profile and group details
+- **get-user**: Get current user information
+  - Parameters: none
+  - Returns: User object with profile, timezone, and primary group details
 
 ### Task Operations
 - **get-tasks-by-day**: Get tasks for a specific day
+  - Parameters: 
+    - \`day\` (required): Date in YYYY-MM-DD format
+    - \`timezone\` (optional): Timezone string (e.g., "America/New_York")
+  - Returns: Array of Task objects for the specified day
+
 - **get-tasks-backlog**: Get tasks from the backlog
+  - Parameters: none  
+  - Returns: Array of Task objects from the backlog
 
 ### Stream Operations
 - **get-streams**: Get streams for the user's group
+  - Parameters: none
+  - Returns: Array of Stream objects
 
 ## Data Types
 
-### User
-Contains user profile information, timezone, and primary group details.
+### User Object
+\`\`\`typescript
+{
+  _id: string;
+  email: string;
+  profile: {
+    _id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    timezone: string;
+    avatarUrl?: string;
+  };
+  primaryGroup?: {
+    groupId: string;
+    name: string;
+    role?: string;
+  };
+}
+\`\`\`
 
-### Task
-Contains task information including title, description, status, dates, and associated streams.
+### Task Object
+\`\`\`typescript
+{
+  _id: string;
+  title: string;
+  description?: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+  scheduledDate?: string;
+  completedAt?: string;
+  streamId?: string;
+  userId: string;
+  groupId: string;
+}
+\`\`\`
 
-### Stream
-Contains stream/project information including name, color, and configuration.
+### Stream Object
+\`\`\`typescript
+{
+  _id: string;
+  name: string;
+  color?: string;
+  groupId: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+\`\`\`
 
 ## Error Handling
+- All operations require valid Sunsama authentication
+- Invalid dates will return validation errors
+- Network errors are handled gracefully with descriptive messages
+- Server maintains session state across tool calls
 
-All operations may throw authentication errors if not properly logged in.
-Use the \`login\` tool first to establish a session.
+## Environment Setup
+Required environment variables:
+- \`API_KEY\`: MCP server authentication key
+- \`SUNSAMA_EMAIL\`: Sunsama account email
+- \`SUNSAMA_PASSWORD\`: Sunsama account password
+- \`PORT\`: Server port (default: 3000)
       `.trim()
     };
   }
