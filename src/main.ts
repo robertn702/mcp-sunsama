@@ -1,6 +1,6 @@
 import { type Context, FastMCP } from "fastmcp";
 import { SunsamaClient } from "sunsama-api";
-import { getTasksBacklogSchema, getTasksByDaySchema, getUserSchema } from "./schemas.js";
+import { getStreamsSchema, getTasksBacklogSchema, getTasksByDaySchema, getUserSchema } from "./schemas.js";
 import { toTsv } from "./utils/to-tsv.js";
 
 /**
@@ -33,7 +33,7 @@ Available tools:
 - Authentication: login, logout, check authentication status
 - User operations: get current user information
 - Task operations: get tasks by day, get backlog tasks
-- Stream operations: get streams for the user's group
+- Stream operations: get streams/channels for the user's group
 
 Authentication is required for all operations. You can either:
 1. Login with email/password using the 'login' tool
@@ -205,7 +205,45 @@ server.addTool({
   }
 });
 
-// TODO: Add stream tools (get-streams)
+// Stream Operations
+server.addTool({
+  name: "get-streams",
+  description: "Get streams for the user's group (streams are called 'channels' in the Sunsama UI)",
+  parameters: getStreamsSchema,
+  execute: async (_args, {session, log}) => {
+    try {
+      log.info("Getting streams for user's group");
+
+      if (!session) {
+        throw new Error("Session not available. Authentication may have failed.");
+      }
+
+      const sunsamaClient = session.sunsamaClient;
+
+      // Ensure we're authenticated to Sunsama
+      await ensureAuthenticated(sunsamaClient, log);
+
+      // Get streams for the user's group
+      const streams = await sunsamaClient.getStreamsByGroupId();
+
+      log.info("Successfully retrieved streams", {count: streams.length});
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: toTsv(streams)
+          }
+        ]
+      };
+
+    } catch (error) {
+      log.error("Failed to get streams", {error: error instanceof Error ? error.message : 'Unknown error'});
+
+      throw new Error(`Failed to get streams: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+});
 
 server.addResource({
   uri: "sunsama://api/docs",
@@ -249,6 +287,7 @@ Authentication happens automatically on server startup. No client-side authentic
 - **get-streams**: Get streams for the user's group
   - Parameters: none
   - Returns: Array of Stream objects
+  - Note: Streams are called "channels" in the Sunsama UI. If a user requests channels, use this tool.
 
 ## Data Types
 
@@ -291,6 +330,7 @@ Authentication happens automatically on server startup. No client-side authentic
 \`\`\`
 
 ### Stream Object
+Note: Streams are called "channels" in the Sunsama UI.
 \`\`\`typescript
 {
   _id: string;
