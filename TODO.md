@@ -29,8 +29,10 @@ The MCP server will follow the FastMCP pattern with:
 - [x] Create reusable authentication utility (ensureAuthenticated)
 - [x] Optimize response formats (JSON for single objects, TSV for arrays)
 
+### Completed (Medium Priority) ✅
+- [x] Create get-tasks-by-day tool (updated to use getUserTimezone method)
+
 ### Medium Priority (In Progress)
-- [ ] Create get-tasks-by-day tool
 - [ ] Create tool for stream operations (getStreamsByGroupId)
 - [ ] Implement proper error handling for SunsamaAuthError
 
@@ -46,9 +48,10 @@ The MCP server will follow the FastMCP pattern with:
   - Returns: User object with profile, timezone, group info (JSON format)
 
 ### Task Tools 
-- `get-tasks-by-day` - Get tasks for specific day (🚧 TODO)
-  - Parameters: day (ISO date string), timezone (optional)
+- `get-tasks-by-day` - Get tasks for specific day ✅
+  - Parameters: day (ISO date string), timezone (optional, defaults to user's timezone)
   - Returns: Array of Task objects (TSV format)
+  - Uses getUserTimezone() method for efficient timezone defaulting
 - `get-tasks-backlog` - Get backlog tasks ✅
   - Parameters: none
   - Returns: Array of Task objects (TSV format)
@@ -125,12 +128,13 @@ The MCP server will follow the FastMCP pattern with:
 - ✅ Git repository initialized (main branch)
 - ✅ `get-user` tool - returns user profile as JSON
 - ✅ `get-tasks-backlog` tool - returns backlog tasks as TSV
+- ✅ `get-tasks-by-day` tool - returns daily tasks as TSV with timezone support
 - ✅ Reusable authentication utility (ensureAuthenticated)
 - ✅ TSV formatting for arrays using papaparse
+- ✅ Efficient timezone handling using getUserTimezone() method
 
 ### Next Implementation Phase
 1. Complete remaining tools:
-   - `get-tasks-by-day` - Get tasks for specific day with timezone support
    - `get-streams` - Get streams for user's group
 2. Implement proper error handling for SunsamaAuthError
 3. Test with real Sunsama API credentials using MCP Inspector

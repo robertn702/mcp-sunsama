@@ -1,6 +1,6 @@
 import { type Context, FastMCP } from "fastmcp";
 import { SunsamaClient } from "sunsama-api";
-import { getTasksBacklogSchema, getUserSchema } from "./schemas.js";
+import { getTasksBacklogSchema, getTasksByDaySchema, getUserSchema } from "./schemas.js";
 import { toTsv } from "./utils/to-tsv.js";
 
 /**
@@ -151,7 +151,60 @@ server.addTool({
   }
 });
 
-// TODO: Add task tools (get-tasks-by-day)
+server.addTool({
+  name: "get-tasks-by-day",
+  description: "Get tasks for a specific day",
+  parameters: getTasksByDaySchema,
+  execute: async (args, {session, log}) => {
+    try {
+      log.info("Getting tasks for day", { day: args.day, timezone: args.timezone });
+
+      if (!session) {
+        throw new Error("Session not available. Authentication may have failed.");
+      }
+
+      const sunsamaClient = session.sunsamaClient;
+
+      // Ensure we're authenticated to Sunsama
+      await ensureAuthenticated(sunsamaClient, log);
+
+      // If no timezone provided, we need to get the user's default timezone
+      let timezone = args.timezone;
+      if (!timezone) {
+        timezone = await sunsamaClient.getUserTimezone();
+        log.info("Using user's default timezone", { timezone });
+      }
+
+      // Get tasks for the specified day with the determined timezone
+      const tasks = await sunsamaClient.getTasksByDay(args.day, timezone);
+
+      log.info("Successfully retrieved tasks for day", { 
+        day: args.day, 
+        count: tasks.length,
+        timezone: timezone
+      });
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: toTsv(tasks)
+          }
+        ]
+      };
+
+    } catch (error) {
+      log.error("Failed to get tasks by day", {
+        day: args.day,
+        timezone: args.timezone,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+
+      throw new Error(`Failed to get tasks for ${args.day}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+});
+
 // TODO: Add stream tools (get-streams)
 
 server.addResource({
