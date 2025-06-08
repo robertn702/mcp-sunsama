@@ -1,7 +1,27 @@
-import { FastMCP } from "fastmcp";
-import { z } from "zod";
+import { type Context, FastMCP } from "fastmcp";
 import { SunsamaClient } from "sunsama-api";
-import { getUserSchema } from "./schemas.js";
+import { getTasksBacklogSchema, getUserSchema } from "./schemas.js";
+import { toTsv } from "./utils/to-tsv.js";
+
+/**
+ * Ensures the SunsamaClient is authenticated, performing login if necessary
+ */
+async function ensureAuthenticated(sunsamaClient: SunsamaClient, log: Context<any>['log']): Promise<void> {
+  const isAuthenticated = await sunsamaClient.isAuthenticated();
+
+  if (!isAuthenticated) {
+    // Attempt to login using environment variables
+    const email = process.env.SUNSAMA_EMAIL;
+    const password = process.env.SUNSAMA_PASSWORD;
+
+    if (!email || !password) {
+      throw new Error("Sunsama credentials not configured. Please set SUNSAMA_EMAIL and SUNSAMA_PASSWORD environment variables.");
+    }
+
+    log.info("Authenticating with Sunsama");
+    await sunsamaClient.login(email, password);
+  }
+}
 
 const server = new FastMCP({
   name: "Sunsama API Server",
@@ -56,36 +76,24 @@ server.addTool({
   name: "get-user",
   description: "Get current user information including profile, timezone, and group details",
   parameters: getUserSchema,
-  execute: async (_args, { session, log }) => {
+  execute: async (_args, {session, log}) => {
     try {
       log.info("Getting user information");
-      
+
       if (!session) {
         throw new Error("Session not available. Authentication may have failed.");
       }
-      
+
       const sunsamaClient = session.sunsamaClient;
-      
-      // First, ensure we're authenticated to Sunsama
-      const isAuthenticated = await sunsamaClient.isAuthenticated();
-      if (!isAuthenticated) {
-        // Attempt to login using environment variables
-        const email = process.env.SUNSAMA_EMAIL;
-        const password = process.env.SUNSAMA_PASSWORD;
-        
-        if (!email || !password) {
-          throw new Error("Sunsama credentials not configured. Please set SUNSAMA_EMAIL and SUNSAMA_PASSWORD environment variables.");
-        }
-        
-        log.info("Authenticating with Sunsama");
-        await sunsamaClient.login(email, password);
-      }
-      
+
+      // Ensure we're authenticated to Sunsama
+      await ensureAuthenticated(sunsamaClient, log);
+
       // Get user information
       const user = await sunsamaClient.getUser();
-      
-      log.info("Successfully retrieved user information", { userId: user._id });
-      
+
+      log.info("Successfully retrieved user information", {userId: user._id});
+
       return {
         content: [
           {
@@ -94,16 +102,56 @@ server.addTool({
           }
         ]
       };
-      
+
     } catch (error) {
-      log.error("Failed to get user information", { error: error instanceof Error ? error.message : 'Unknown error' });
-      
+      log.error("Failed to get user information", {error: error instanceof Error ? error.message : 'Unknown error'});
+
       throw new Error(`Failed to get user information: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 });
 
-// TODO: Add task tools (get-tasks-by-day, get-tasks-backlog)
+// Task Operations
+server.addTool({
+  name: "get-tasks-backlog",
+  description: "Get tasks from the backlog",
+  parameters: getTasksBacklogSchema,
+  execute: async (_args, {session, log}) => {
+    try {
+      log.info("Getting backlog tasks");
+
+      if (!session) {
+        throw new Error("Session not available. Authentication may have failed.");
+      }
+
+      const sunsamaClient = session.sunsamaClient;
+
+      // Ensure we're authenticated to Sunsama
+      await ensureAuthenticated(sunsamaClient, log);
+
+      // Get backlog tasks
+      const tasks = await sunsamaClient.getTasksBacklog();
+
+      log.info("Successfully retrieved backlog tasks", {count: tasks.length});
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: toTsv(tasks)
+          }
+        ]
+      };
+
+    } catch (error) {
+      log.error("Failed to get backlog tasks", {error: error instanceof Error ? error.message : 'Unknown error'});
+
+      throw new Error(`Failed to get backlog tasks: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+});
+
+// TODO: Add task tools (get-tasks-by-day)
 // TODO: Add stream tools (get-streams)
 
 server.addResource({
