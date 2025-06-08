@@ -22,9 +22,15 @@ The MCP server will follow the FastMCP pattern with:
 - [x] Define authentication strategy for Sunsama credentials (ENV vars)
 - [x] Create Zod schemas for API parameters and responses
 
-### Medium Priority
-- [ ] Create tool for user operations (getUser)
-- [ ] Create tools for task operations (getTasksByDay, getTasksBacklog)
+### Completed (Medium Priority) ✅
+- [x] Create tool for user operations (getUser)
+- [x] Create get-tasks-backlog tool
+- [x] Add papaparse for TSV formatting
+- [x] Create reusable authentication utility (ensureAuthenticated)
+- [x] Optimize response formats (JSON for single objects, TSV for arrays)
+
+### Medium Priority (In Progress)
+- [ ] Create get-tasks-by-day tool
 - [ ] Create tool for stream operations (getStreamsByGroupId)
 - [ ] Implement proper error handling for SunsamaAuthError
 
@@ -32,25 +38,25 @@ The MCP server will follow the FastMCP pattern with:
 - [ ] Add comprehensive error handling utilities
 - [ ] Add logging and monitoring features
 
-## Core Tools to Implement
+## Core Tools Implemented
 
-### User Tools
+### User Tools ✅
 - `get-user` - Get current user info
   - Parameters: none
-  - Returns: User object with profile, timezone, group info
+  - Returns: User object with profile, timezone, group info (JSON format)
 
-### Task Tools
-- `get-tasks-by-day` - Get tasks for specific day
+### Task Tools 
+- `get-tasks-by-day` - Get tasks for specific day (🚧 TODO)
   - Parameters: day (ISO date string), timezone (optional)
-  - Returns: Array of Task objects
-- `get-tasks-backlog` - Get backlog tasks
+  - Returns: Array of Task objects (TSV format)
+- `get-tasks-backlog` - Get backlog tasks ✅
   - Parameters: none
-  - Returns: Array of Task objects
+  - Returns: Array of Task objects (TSV format)
 
 ### Stream Tools
-- `get-streams` - Get streams by group ID
+- `get-streams` - Get streams by group ID (🚧 TODO)
   - Parameters: none (uses cached group ID from user)
-  - Returns: Array of Stream objects
+  - Returns: Array of Stream objects (TSV format)
 
 ## Authentication Strategy
 
@@ -81,7 +87,8 @@ The MCP server will follow the FastMCP pattern with:
 
 ### Data Formats
 - Follow existing mcp-closet-manager patterns
-- Return structured data (avoid TSV for complex objects)
+- JSON format for single objects (e.g., get-user)
+- TSV format for arrays to save context tokens (e.g., get-tasks-backlog)
 - Include proper type validation
 
 ### Current File Structure
@@ -90,19 +97,16 @@ The MCP server will follow the FastMCP pattern with:
 ├── .gitignore           # Git ignore patterns
 ├── README.md           # Project documentation
 ├── TODO.md             # This implementation plan
-├── package.json        # Dependencies and scripts
+├── package.json        # Dependencies and scripts (includes papaparse)
 ├── tsconfig.json       # TypeScript configuration
 ├── mcp-inspector.json  # MCP Inspector config
 ├── bun.lock           # Bun lockfile
+├── .env                # Environment variables (gitignored)
 └── src/
-    └── main.ts         # ✅ Main FastMCP server setup (scaffolded)
-
+    ├── main.ts         # ✅ Main FastMCP server with tools and auth utility
     ├── schemas.ts      # ✅ Zod validation schemas
-
-Planned:
-├── auth.ts            # Authentication helpers
-└── utils/
-    └── error-handler.ts  # Error handling utilities
+    └── utils/
+        └── to-tsv.ts   # ✅ TSV conversion utility using papaparse
 ```
 
 ## Environment Variables
@@ -119,12 +123,18 @@ Planned:
 - ✅ API documentation resource
 - ✅ Environment configuration
 - ✅ Git repository initialized (main branch)
+- ✅ `get-user` tool - returns user profile as JSON
+- ✅ `get-tasks-backlog` tool - returns backlog tasks as TSV
+- ✅ Reusable authentication utility (ensureAuthenticated)
+- ✅ TSV formatting for arrays using papaparse
 
 ### Next Implementation Phase
-1. ✅ Create Zod schemas for all API parameters
-2. Add user and task management tools
-3. Implement error handling for SunsamaAuthError
-4. Test with real Sunsama API credentials
+1. Complete remaining tools:
+   - `get-tasks-by-day` - Get tasks for specific day with timezone support
+   - `get-streams` - Get streams for user's group
+2. Implement proper error handling for SunsamaAuthError
+3. Test with real Sunsama API credentials using MCP Inspector
+4. Update server instructions to remove outdated authentication references
 
 ## Testing Strategy
 - Use `npx fastmcp dev src/main.ts` for development
