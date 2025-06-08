@@ -11,7 +11,9 @@
     "inspect": "npx @modelcontextprotocol/inspector --config ./mcp-inspector.json --server sunsama"
   },
   "dependencies": {
+    "@types/papaparse": "^5.3.16",
     "fastmcp": "2.1.3",
+    "papaparse": "^5.5.3",
     "sunsama-api": "file:../sunsama-ts",
     "zod": "3.24.4"
   },
