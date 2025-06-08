@@ -56,7 +56,7 @@ server.addTool({
   name: "get-user",
   description: "Get current user information including profile, timezone, and group details",
   parameters: getUserSchema,
-  execute: async (args, { session, log }) => {
+  execute: async (_args, { session, log }) => {
     try {
       log.info("Getting user information");
       
@@ -90,10 +90,7 @@ server.addTool({
         content: [
           {
             type: "text",
-            text: JSON.stringify({
-              user,
-              success: true
-            }, null, 2)
+            text: JSON.stringify(user, null, 2)
           }
         ]
       };
