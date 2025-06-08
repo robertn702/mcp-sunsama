@@ -1,0 +1,24 @@
+{
+  "name": "mcp-sunsama",
+  "private": true,
+  "scripts": {
+    "dev": "bun --env-file=.env ./src/main.ts",
+    "test": "bun test",
+    "test:watch": "bun test --watch",
+    "typecheck": "bunx tsc --noEmit",
+    "typecheck:watch": "bunx tsc --noEmit --watch",
+    "build": "bunx tsc",
+    "inspect": "npx @modelcontextprotocol/inspector --config ./mcp-inspector.json --server sunsama"
+  },
+  "dependencies": {
+    "fastmcp": "2.1.3",
+    "sunsama-api": "file:../sunsama-ts",
+    "zod": "3.24.4"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}

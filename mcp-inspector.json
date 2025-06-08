@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "sunsama": {
+      "command": "bun",
+      "args": [
+        "--env-file=.env",
+        "./src/main.ts"
+      ],
+      "env": {
+        "PORT": "3002"
+      }
+    }
+  }
+}
