@@ -1,6 +1,7 @@
 import { FastMCP } from "fastmcp";
 import { z } from "zod";
 import { SunsamaClient } from "sunsama-api";
+import { getUserSchema } from "./schemas.js";
 
 const server = new FastMCP({
   name: "Sunsama API Server",
@@ -50,8 +51,61 @@ The server maintains session state per MCP connection, so you only need to authe
   },
 });
 
-// TODO: Add authentication tools (login, logout, is-authenticated)
-// TODO: Add user tools (get-user)
+// User Operations
+server.addTool({
+  name: "get-user",
+  description: "Get current user information including profile, timezone, and group details",
+  parameters: getUserSchema,
+  execute: async (args, { session, log }) => {
+    try {
+      log.info("Getting user information");
+      
+      if (!session) {
+        throw new Error("Session not available. Authentication may have failed.");
+      }
+      
+      const sunsamaClient = session.sunsamaClient;
+      
+      // First, ensure we're authenticated to Sunsama
+      const isAuthenticated = await sunsamaClient.isAuthenticated();
+      if (!isAuthenticated) {
+        // Attempt to login using environment variables
+        const email = process.env.SUNSAMA_EMAIL;
+        const password = process.env.SUNSAMA_PASSWORD;
+        
+        if (!email || !password) {
+          throw new Error("Sunsama credentials not configured. Please set SUNSAMA_EMAIL and SUNSAMA_PASSWORD environment variables.");
+        }
+        
+        log.info("Authenticating with Sunsama");
+        await sunsamaClient.login(email, password);
+      }
+      
+      // Get user information
+      const user = await sunsamaClient.getUser();
+      
+      log.info("Successfully retrieved user information", { userId: user._id });
+      
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify({
+              user,
+              success: true
+            }, null, 2)
+          }
+        ]
+      };
+      
+    } catch (error) {
+      log.error("Failed to get user information", { error: error instanceof Error ? error.message : 'Unknown error' });
+      
+      throw new Error(`Failed to get user information: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+});
+
 // TODO: Add task tools (get-tasks-by-day, get-tasks-backlog)
 // TODO: Add stream tools (get-streams)
 
