@@ -6,6 +6,7 @@ import type { SessionData } from "./auth/types.js";
 import { getTransportConfig } from "./config/transport.js";
 import { getStreamsSchema, getTasksBacklogSchema, getTasksByDaySchema, getUserSchema } from "./schemas.js";
 import { toTsv } from "./utils/to-tsv.js";
+import { trimTasksForResponse } from "./utils/task-trimmer.js";
 
 // Get transport configuration with validation
 const transportConfig = getTransportConfig();
@@ -89,13 +90,16 @@ server.addTool({
       // Get backlog tasks
       const tasks = await sunsamaClient.getTasksBacklog();
 
+      // Trim tasks to reduce response size while preserving essential data
+      const trimmedTasks = trimTasksForResponse(tasks);
+
       log.info("Successfully retrieved backlog tasks", {count: tasks.length});
 
       return {
         content: [
           {
             type: "text",
-            text: toTsv(tasks)
+            text: toTsv(trimmedTasks)
           }
         ]
       };
@@ -129,6 +133,9 @@ server.addTool({
       // Get tasks for the specified day with the determined timezone
       const tasks = await sunsamaClient.getTasksByDay(args.day, timezone);
 
+      // Trim tasks to reduce response size while preserving essential data
+      const trimmedTasks = trimTasksForResponse(tasks);
+
       log.info("Successfully retrieved tasks for day", {
         day: args.day,
         count: tasks.length,
@@ -139,7 +146,7 @@ server.addTool({
         content: [
           {
             type: "text",
-            text: toTsv(tasks)
+            text: toTsv(trimmedTasks)
           }
         ]
       };
