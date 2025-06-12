@@ -1,27 +1,47 @@
-import { type Context, FastMCP } from "fastmcp";
+import { FastMCP } from "fastmcp";
 import { SunsamaClient } from "sunsama-api";
 import { getStreamsSchema, getTasksBacklogSchema, getTasksByDaySchema, getUserSchema } from "./schemas.js";
 import { toTsv } from "./utils/to-tsv.js";
+import { getTransportConfig } from "./config/transport.js";
+
+// Get transport configuration with validation
+const transportConfig = getTransportConfig();
+
+// For stdio transport, authenticate at startup with environment variables
+let globalSunsamaClient: SunsamaClient | null = null;
+if (transportConfig.transportType === "stdio") {
+  if (!process.env.SUNSAMA_EMAIL || !process.env.SUNSAMA_PASSWORD) {
+    throw new Error("Sunsama credentials not configured. Please set SUNSAMA_EMAIL and SUNSAMA_PASSWORD environment variables.");
+  }
+  globalSunsamaClient = new SunsamaClient();
+  await globalSunsamaClient.login(process.env.SUNSAMA_EMAIL, process.env.SUNSAMA_PASSWORD);
+}
 
 /**
- * Ensures the SunsamaClient is authenticated, performing login if necessary
+ * Session data interface for HTTP transport
  */
-async function ensureAuthenticated(sunsamaClient: SunsamaClient, log: Context<any>['log']): Promise<void> {
-  const isAuthenticated = await sunsamaClient.isAuthenticated();
-
-  if (!isAuthenticated) {
-    // Attempt to login using environment variables
-    const email = process.env.SUNSAMA_EMAIL;
-    const password = process.env.SUNSAMA_PASSWORD;
-
-    if (!email || !password) {
-      throw new Error("Sunsama credentials not configured. Please set SUNSAMA_EMAIL and SUNSAMA_PASSWORD environment variables.");
-    }
-
-    log.info("Authenticating with Sunsama");
-    await sunsamaClient.login(email, password);
-  }
+interface SessionData {
+  sunsamaClient: SunsamaClient;
+  email: string;
 }
+
+/**
+ * Gets the appropriate SunsamaClient instance based on transport type
+ */
+function getSunsamaClient(session: SessionData | null): SunsamaClient {
+  if (transportConfig.transportType === "httpStream") {
+    if (!session?.sunsamaClient) {
+      throw new Error("Session not available. Authentication may have failed.");
+    }
+    return session.sunsamaClient;
+  }
+  
+  if (!globalSunsamaClient) {
+    throw new Error("Global Sunsama client not initialized.");
+  }
+  return globalSunsamaClient;
+}
+
 
 const server = new FastMCP({
   name: "Sunsama API Server",
@@ -41,34 +61,48 @@ Authentication is required for all operations. You can either:
 
 The server maintains session state per MCP connection, so you only need to authenticate once per session.
   `.trim(),
-  authenticate: (request) => {
-    console.log("Authentication request headers:", {
-      'x-api-key': request.headers["x-api-key"] ? '[PRESENT]' : '[MISSING]',
-      'authorization': request.headers["authorization"] ? '[PRESENT]' : '[MISSING]'
-    });
+  // dynamically handle authentication
+  ...(transportConfig.transportType === "httpStream" ? {
+    authenticate: async (request) => {
+      const authHeader = request.headers["authorization"];
+      
+      if (!authHeader || !authHeader.startsWith('Basic ')) {
+        throw new Response(null, {
+          status: 401,
+          statusText: "Unauthorized: Basic Auth required",
+          headers: { 'WWW-Authenticate': 'Basic realm="Sunsama MCP"' }
+        });
+      }
 
-    const apiKey = request.headers["x-api-key"];
-    const bearerToken = request.headers["authorization"]?.replace("Bearer ", "");
-    const expectedKey = process.env["API_KEY"];
+      try {
+        // Parse Basic Auth credentials
+        const base64Credentials = authHeader.replace('Basic ', '');
+        const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
+        const [email, password] = credentials.split(':');
 
-    console.log("Expected API key present:", expectedKey ? '[PRESENT]' : '[MISSING]');
+        if (!email || !password) {
+          throw new Error("Invalid Basic Auth format");
+        }
 
-    if (apiKey === expectedKey || bearerToken === expectedKey) {
-      console.log("Authentication successful");
-      // Return session data that will be available in tool contexts
-      return Promise.resolve({
-        // Each MCP session gets its own SunsamaClient instance
-        sunsamaClient: new SunsamaClient(),
-        sessionId: Date.now().toString()
-      });
-    }
-
-    console.log("Authentication failed");
-    throw new Response(null, {
-      status: 401,
-      statusText: "Unauthorized",
-    });
-  },
+        // Create and authenticate SunsamaClient
+        const sunsamaClient = new SunsamaClient();
+        await sunsamaClient.login(email, password);
+        
+        console.log(`HTTP session authenticated for user: ${email}`);
+        
+        return {
+          sunsamaClient,
+          email
+        };
+      } catch (error) {
+        console.log("Authentication failed:", error instanceof Error ? error.message : 'Unknown error');
+        throw new Response(null, {
+          status: 401,
+          statusText: "Unauthorized: Invalid Sunsama credentials"
+        });
+      }
+    },
+  } : {})
 });
 
 // User Operations
@@ -80,14 +114,8 @@ server.addTool({
     try {
       log.info("Getting user information");
 
-      if (!session) {
-        throw new Error("Session not available. Authentication may have failed.");
-      }
-
-      const sunsamaClient = session.sunsamaClient;
-
-      // Ensure we're authenticated to Sunsama
-      await ensureAuthenticated(sunsamaClient, log);
+      // Get the appropriate client based on transport type
+      const sunsamaClient = getSunsamaClient(session as SessionData | null);
 
       // Get user information
       const user = await sunsamaClient.getUser();
@@ -120,14 +148,8 @@ server.addTool({
     try {
       log.info("Getting backlog tasks");
 
-      if (!session) {
-        throw new Error("Session not available. Authentication may have failed.");
-      }
-
-      const sunsamaClient = session.sunsamaClient;
-
-      // Ensure we're authenticated to Sunsama
-      await ensureAuthenticated(sunsamaClient, log);
+      // Get the appropriate client based on transport type
+      const sunsamaClient = getSunsamaClient(session as SessionData | null);
 
       // Get backlog tasks
       const tasks = await sunsamaClient.getTasksBacklog();
@@ -157,29 +179,23 @@ server.addTool({
   parameters: getTasksByDaySchema,
   execute: async (args, {session, log}) => {
     try {
-      log.info("Getting tasks for day", { day: args.day, timezone: args.timezone });
+      log.info("Getting tasks for day", {day: args.day, timezone: args.timezone});
 
-      if (!session) {
-        throw new Error("Session not available. Authentication may have failed.");
-      }
-
-      const sunsamaClient = session.sunsamaClient;
-
-      // Ensure we're authenticated to Sunsama
-      await ensureAuthenticated(sunsamaClient, log);
+      // Get the appropriate client based on transport type
+      const sunsamaClient = getSunsamaClient(session as SessionData | null);
 
       // If no timezone provided, we need to get the user's default timezone
       let timezone = args.timezone;
       if (!timezone) {
         timezone = await sunsamaClient.getUserTimezone();
-        log.info("Using user's default timezone", { timezone });
+        log.info("Using user's default timezone", {timezone});
       }
 
       // Get tasks for the specified day with the determined timezone
       const tasks = await sunsamaClient.getTasksByDay(args.day, timezone);
 
-      log.info("Successfully retrieved tasks for day", { 
-        day: args.day, 
+      log.info("Successfully retrieved tasks for day", {
+        day: args.day,
         count: tasks.length,
         timezone: timezone
       });
@@ -214,14 +230,8 @@ server.addTool({
     try {
       log.info("Getting streams for user's group");
 
-      if (!session) {
-        throw new Error("Session not available. Authentication may have failed.");
-      }
-
-      const sunsamaClient = session.sunsamaClient;
-
-      // Ensure we're authenticated to Sunsama
-      await ensureAuthenticated(sunsamaClient, log);
+      // Get the appropriate client based on transport type
+      const sunsamaClient = getSunsamaClient(session as SessionData | null);
 
       // Get streams for the user's group
       const streams = await sunsamaClient.getStreamsByGroupId();
@@ -360,27 +370,27 @@ Required environment variables:
   }
 });
 
-const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
+// Log startup information
+console.log(`Starting Sunsama MCP Server with transport: ${transportConfig.transportType}`);
+if (transportConfig.transportType === "httpStream") {
+  console.log(`HTTP Stream configuration: port=${transportConfig.httpStream?.port}, endpoint=${transportConfig.httpStream?.endpoint}`);
+}
 
-server
-  .start({
+// Start server with dynamic transport configuration
+if (transportConfig.transportType === "httpStream") {
+  server.start({
     transportType: "httpStream",
     httpStream: {
-      port: PORT,
+      port: transportConfig.httpStream!.port
     }
-  })
-  .then(() => {
-    console.log(`Sunsama MCP Server running on port ${PORT}`);
-    console.log("Environment check:");
-    console.log("- API_KEY:", process.env["API_KEY"] ? "[PRESENT]" : "[MISSING]");
-    console.log("- PORT:", PORT);
-    console.log("");
-    console.log("Server capabilities:");
-    console.log("- Authentication: API key via x-api-key header or Bearer token");
-    console.log("- Transport: HTTP streaming");
-    console.log("- Session management: Per-connection SunsamaClient instances");
-    console.log("");
-    console.log("Development commands:");
-    console.log("- Test: npx fastmcp dev src/main.ts");
-    console.log("- Inspect: npx fastmcp inspect src/main.ts");
+  }).then(() => {
+    console.log(`Sunsama MCP Server running on port ${transportConfig.httpStream!.port}`);
+    console.log(`HTTP endpoint: ${transportConfig.httpStream!.endpoint}`);
+    console.log("Authentication: HTTP Basic Auth with Sunsama credentials");
   });
+} else {
+  server.start({
+    transportType: "stdio"
+  });
+  console.log("Server started with stdio transport");
+}
