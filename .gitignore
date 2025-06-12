@@ -28,6 +28,9 @@ build/
 ehthumbs.db
 Thumbs.db
 
+# MCP configuration
+.mcp.json
+
 # Logs
 logs/
 *.log
