@@ -4,10 +4,14 @@ import { z } from "zod";
  * Task Operation Schemas
  */
 
+// Completion filter schema
+export const completionFilterSchema = z.enum(["all", "incomplete", "completed"]);
+
 // Get tasks by day parameters
 export const getTasksByDaySchema = z.object({
   day: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Day must be in YYYY-MM-DD format"),
   timezone: z.string().optional().describe("Timezone string (e.g., 'America/New_York'). If not provided, uses user's default timezone"),
+  completionFilter: completionFilterSchema.optional().describe("Filter tasks by completion status. 'all' returns all tasks, 'incomplete' returns only incomplete tasks, 'completed' returns only completed tasks. Defaults to 'all'"),
 });
 
 // Get tasks backlog parameters (no parameters needed)
@@ -115,6 +119,8 @@ export const errorResponseSchema = z.object({
 /**
  * Type Exports (for use in tools)
  */
+export type CompletionFilter = z.infer<typeof completionFilterSchema>;
+
 export type GetTasksByDayInput = z.infer<typeof getTasksByDaySchema>;
 export type GetTasksBacklogInput = z.infer<typeof getTasksBacklogSchema>;
 export type GetUserInput = z.infer<typeof getUserSchema>;

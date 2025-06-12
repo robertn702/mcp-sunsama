@@ -7,6 +7,7 @@ import { getTransportConfig } from "./config/transport.js";
 import { getStreamsSchema, getTasksBacklogSchema, getTasksByDaySchema, getUserSchema } from "./schemas.js";
 import { toTsv } from "./utils/to-tsv.js";
 import { trimTasksForResponse } from "./utils/task-trimmer.js";
+import { filterTasksByCompletion } from "./utils/task-filters.js";
 
 // Get transport configuration with validation
 const transportConfig = getTransportConfig();
@@ -114,11 +115,18 @@ server.addTool({
 
 server.addTool({
   name: "get-tasks-by-day",
-  description: "Get tasks for a specific day",
+  description: "Get tasks for a specific day with optional filtering by completion status",
   parameters: getTasksByDaySchema,
   execute: async (args, {session, log}) => {
     try {
-      log.info("Getting tasks for day", {day: args.day, timezone: args.timezone});
+      // Extract and set defaults for parameters
+      const completionFilter = args.completionFilter || "all";
+      
+      log.info("Getting tasks for day", {
+        day: args.day, 
+        timezone: args.timezone,
+        completionFilter: completionFilter
+      });
 
       // Get the appropriate client based on transport type
       const sunsamaClient = getSunsamaClient(session as SessionData | null);
@@ -133,12 +141,17 @@ server.addTool({
       // Get tasks for the specified day with the determined timezone
       const tasks = await sunsamaClient.getTasksByDay(args.day, timezone);
 
+      // Apply completion filter BEFORE trimming for efficiency
+      const filteredTasks = filterTasksByCompletion(tasks, completionFilter);
+
       // Trim tasks to reduce response size while preserving essential data
-      const trimmedTasks = trimTasksForResponse(tasks);
+      const trimmedTasks = trimTasksForResponse(filteredTasks);
 
       log.info("Successfully retrieved tasks for day", {
         day: args.day,
-        count: tasks.length,
+        totalCount: tasks.length,
+        filteredCount: filteredTasks.length,
+        filter: completionFilter,
         timezone: timezone
       });
 
@@ -155,6 +168,7 @@ server.addTool({
       log.error("Failed to get tasks by day", {
         day: args.day,
         timezone: args.timezone,
+        completionFilter: args.completionFilter,
         error: error instanceof Error ? error.message : 'Unknown error'
       });
 
@@ -225,11 +239,15 @@ Authentication happens automatically on server startup. No client-side authentic
   - Returns: User object with profile, timezone, and primary group details
 
 ### Task Operations
-- **get-tasks-by-day**: Get tasks for a specific day
+- **get-tasks-by-day**: Get tasks for a specific day with optional filtering
   - Parameters: 
     - \`day\` (required): Date in YYYY-MM-DD format
     - \`timezone\` (optional): Timezone string (e.g., "America/New_York")
-  - Returns: Array of Task objects for the specified day
+    - \`completionFilter\` (optional): Filter by completion status
+      - \`"all"\` (default): Return all tasks
+      - \`"incomplete"\`: Return only incomplete tasks
+      - \`"completed"\`: Return only completed tasks
+  - Returns: Array of filtered Task objects for the specified day
 
 - **get-tasks-backlog**: Get tasks from the backlog
   - Parameters: none  
