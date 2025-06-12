@@ -1,45 +1,18 @@
 import { FastMCP } from "fastmcp";
-import { SunsamaClient } from "sunsama-api";
+import { getSunsamaClient } from "./utils/client-resolver.js";
+import { httpStreamAuthenticator } from "./auth/http.js";
+import { initializeStdioAuth } from "./auth/stdio.js";
+import type { SessionData } from "./auth/types.js";
+import { getTransportConfig } from "./config/transport.js";
 import { getStreamsSchema, getTasksBacklogSchema, getTasksByDaySchema, getUserSchema } from "./schemas.js";
 import { toTsv } from "./utils/to-tsv.js";
-import { getTransportConfig } from "./config/transport.js";
 
 // Get transport configuration with validation
 const transportConfig = getTransportConfig();
 
 // For stdio transport, authenticate at startup with environment variables
-let globalSunsamaClient: SunsamaClient | null = null;
 if (transportConfig.transportType === "stdio") {
-  if (!process.env.SUNSAMA_EMAIL || !process.env.SUNSAMA_PASSWORD) {
-    throw new Error("Sunsama credentials not configured. Please set SUNSAMA_EMAIL and SUNSAMA_PASSWORD environment variables.");
-  }
-  globalSunsamaClient = new SunsamaClient();
-  await globalSunsamaClient.login(process.env.SUNSAMA_EMAIL, process.env.SUNSAMA_PASSWORD);
-}
-
-/**
- * Session data interface for HTTP transport
- */
-interface SessionData {
-  sunsamaClient: SunsamaClient;
-  email: string;
-}
-
-/**
- * Gets the appropriate SunsamaClient instance based on transport type
- */
-function getSunsamaClient(session: SessionData | null): SunsamaClient {
-  if (transportConfig.transportType === "httpStream") {
-    if (!session?.sunsamaClient) {
-      throw new Error("Session not available. Authentication may have failed.");
-    }
-    return session.sunsamaClient;
-  }
-  
-  if (!globalSunsamaClient) {
-    throw new Error("Global Sunsama client not initialized.");
-  }
-  return globalSunsamaClient;
+  await initializeStdioAuth();
 }
 
 
@@ -63,45 +36,7 @@ The server maintains session state per MCP connection, so you only need to authe
   `.trim(),
   // dynamically handle authentication
   ...(transportConfig.transportType === "httpStream" ? {
-    authenticate: async (request) => {
-      const authHeader = request.headers["authorization"];
-      
-      if (!authHeader || !authHeader.startsWith('Basic ')) {
-        throw new Response(null, {
-          status: 401,
-          statusText: "Unauthorized: Basic Auth required",
-          headers: { 'WWW-Authenticate': 'Basic realm="Sunsama MCP"' }
-        });
-      }
-
-      try {
-        // Parse Basic Auth credentials
-        const base64Credentials = authHeader.replace('Basic ', '');
-        const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
-        const [email, password] = credentials.split(':');
-
-        if (!email || !password) {
-          throw new Error("Invalid Basic Auth format");
-        }
-
-        // Create and authenticate SunsamaClient
-        const sunsamaClient = new SunsamaClient();
-        await sunsamaClient.login(email, password);
-        
-        console.log(`HTTP session authenticated for user: ${email}`);
-        
-        return {
-          sunsamaClient,
-          email
-        };
-      } catch (error) {
-        console.log("Authentication failed:", error instanceof Error ? error.message : 'Unknown error');
-        throw new Response(null, {
-          status: 401,
-          statusText: "Unauthorized: Invalid Sunsama credentials"
-        });
-      }
-    },
+    authenticate: httpStreamAuthenticator,
   } : {})
 });
 
