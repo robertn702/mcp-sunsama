@@ -1,5 +1,13 @@
 # mcp-sunsama
 
+## 0.2.1
+
+### Patch Changes
+
+- Fix binary execution issue by adding Node.js shebang line
+
+  The npm package binary was failing to execute because it was missing the `#!/usr/bin/env node` shebang line at the top of the file. This caused the shell to treat the JavaScript file as a shell script instead of passing it to Node.js for execution.
+
 ## 0.2.0
 
 ### Minor Changes
