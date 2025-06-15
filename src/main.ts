@@ -4,7 +4,16 @@ import { httpStreamAuthenticator } from "./auth/http.js";
 import { initializeStdioAuth } from "./auth/stdio.js";
 import type { SessionData } from "./auth/types.js";
 import { getTransportConfig } from "./config/transport.js";
-import { getStreamsSchema, getTasksBacklogSchema, getTasksByDaySchema, getUserSchema } from "./schemas.js";
+import type { CreateTaskOptions } from "sunsama-api";
+import { 
+  getStreamsSchema, 
+  getTasksBacklogSchema, 
+  getTasksByDaySchema, 
+  getUserSchema,
+  createTaskSchema,
+  updateTaskCompleteSchema,
+  deleteTaskSchema
+} from "./schemas.js";
 import { toTsv } from "./utils/to-tsv.js";
 import { trimTasksForResponse } from "./utils/task-trimmer.js";
 import { filterTasksByCompletion } from "./utils/task-filters.js";
@@ -173,6 +182,76 @@ server.addTool({
       });
 
       throw new Error(`Failed to get tasks for ${args.day}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+});
+
+// Task Mutation Operations
+server.addTool({
+  name: "create-task",
+  description: "Create a new task with optional properties",
+  parameters: createTaskSchema,
+  execute: async (args, {session, log}) => {
+    try {
+      // Extract parameters from args
+      const { text, notes, streamIds, timeEstimate, dueDate, snoozeUntil, private: isPrivate, taskId } = args;
+      
+      log.info("Creating new task", {
+        text: text,
+        hasNotes: !!notes,
+        streamCount: streamIds?.length || 0,
+        timeEstimate: timeEstimate,
+        hasDueDate: !!dueDate,
+        hasSnooze: !!snoozeUntil,
+        isPrivate: isPrivate,
+        customTaskId: !!taskId
+      });
+
+      // Get the appropriate client based on transport type
+      const sunsamaClient = getSunsamaClient(session as SessionData | null);
+
+      // Build options object for createTask
+      const options: CreateTaskOptions = {};
+      if (notes) options.notes = notes;
+      if (streamIds) options.streamIds = streamIds;
+      if (timeEstimate) options.timeEstimate = timeEstimate;
+      if (dueDate) options.dueDate = dueDate;
+      if (snoozeUntil) options.snoozeUntil = snoozeUntil;
+      if (isPrivate !== undefined) options.private = isPrivate;
+      if (taskId) options.taskId = taskId;
+
+      // Call sunsamaClient.createTask(text, options)
+      const result = await sunsamaClient.createTask(text, options);
+
+      log.info("Successfully created task", {
+        taskId: result.updatedFields?._id || 'unknown',
+        title: text,
+        success: result.success
+      });
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify({
+              success: result.success,
+              taskId: result.updatedFields?._id,
+              title: text,
+              created: true,
+              error: result.error,
+              updatedFields: result.updatedFields
+            })
+          }
+        ]
+      };
+
+    } catch (error) {
+      log.error("Failed to create task", {
+        text: args.text,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+
+      throw new Error(`Failed to create task: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 });
