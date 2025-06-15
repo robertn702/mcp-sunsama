@@ -135,3 +135,9 @@ When updating the version:
 1. Update `package.json` version (done automatically by changesets)
 2. Manually update the FastMCP server version in `src/main.ts`
 3. Both versions must be identical for consistency
+
+## Git Rules
+
+**IMPORTANT**: Never commit the `dev/` directory or any of its files to git. This directory contains development data including sample API responses and testing data that should remain local only.
+
+**IMPORTANT**: Never include "Claude" in git commit messages. Keep commit messages professional and focused on the actual changes made.
