@@ -12,7 +12,8 @@ import {
   getTasksBacklogSchema,
   getTasksByDaySchema,
   getUserSchema,
-  updateTaskCompleteSchema
+  updateTaskCompleteSchema,
+  updateTaskSnoozeDateSchema
 } from "./schemas.js";
 import { getSunsamaClient } from "./utils/client-resolver.js";
 import { filterTasksByCompletion } from "./utils/task-filters.js";
@@ -363,6 +364,72 @@ server.addTool({
       });
 
       throw new Error(`Failed to delete task: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+});
+
+server.addTool({
+  name: "update-task-snooze-date",
+  description: "Update task snooze date to reschedule tasks or move them to backlog",
+  parameters: updateTaskSnoozeDateSchema,
+  execute: async (args, {session, log}) => {
+    try {
+      // Extract parameters
+      const {taskId, newDay, timezone, limitResponsePayload} = args;
+
+      log.info("Updating task snooze date", {
+        taskId: taskId,
+        newDay: newDay,
+        timezone: timezone,
+        limitResponsePayload: limitResponsePayload
+      });
+
+      // Get the appropriate client based on transport type
+      const sunsamaClient = getSunsamaClient(session as SessionData | null);
+
+      // Build options object
+      const options: {
+        timezone?: string;
+        limitResponsePayload?: boolean;
+      } = {};
+      if (timezone) options.timezone = timezone;
+      if (limitResponsePayload !== undefined) options.limitResponsePayload = limitResponsePayload;
+
+      // Call sunsamaClient.updateTaskSnoozeDate(taskId, newDay, options)
+      const result = await sunsamaClient.updateTaskSnoozeDate(
+        taskId,
+        newDay,
+        options
+      );
+
+      log.info("Successfully updated task snooze date", {
+        taskId: taskId,
+        newDay: newDay,
+        success: result.success
+      });
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify({
+              success: result.success,
+              taskId: taskId,
+              newDay: newDay,
+              updatedFields: result.updatedFields
+            })
+          }
+        ]
+      };
+
+    } catch (error) {
+      log.error("Failed to update task snooze date", {
+        taskId: args.taskId,
+        newDay: args.newDay,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+
+      throw new Error(`Failed to update task snooze date: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 });

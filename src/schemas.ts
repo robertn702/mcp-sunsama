@@ -61,6 +61,14 @@ export const deleteTaskSchema = z.object({
   wasTaskMerged: z.boolean().optional().describe("Whether the task was merged before deletion"),
 });
 
+// Update task snooze date parameters
+export const updateTaskSnoozeDateSchema = z.object({
+  taskId: z.string().min(1, "Task ID is required").describe("The ID of the task to reschedule"),
+  newDay: z.string().date("Must be a valid date in YYYY-MM-DD format").nullable().describe("Target date in YYYY-MM-DD format, or null to move to backlog"),
+  timezone: z.string().optional().describe("Timezone string (e.g., 'America/New_York'). If not provided, uses user's default timezone"),
+  limitResponsePayload: z.boolean().optional().describe("Whether to limit the response payload size"),
+});
+
 /**
  * Response Type Schemas (for validation and documentation)
  */
@@ -159,6 +167,7 @@ export type GetStreamsInput = z.infer<typeof getStreamsSchema>;
 export type CreateTaskInput = z.infer<typeof createTaskSchema>;
 export type UpdateTaskCompleteInput = z.infer<typeof updateTaskCompleteSchema>;
 export type DeleteTaskInput = z.infer<typeof deleteTaskSchema>;
+export type UpdateTaskSnoozeDateInput = z.infer<typeof updateTaskSnoozeDateSchema>;
 
 export type User = z.infer<typeof userSchema>;
 export type Task = z.infer<typeof taskSchema>;
