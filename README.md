@@ -1,95 +1,143 @@
-# MCP Sunsama Server
+# Sunsama MCP Server
 
-A Model Context Protocol (MCP) server that provides access to Sunsama task management capabilities. Built with FastMCP and TypeScript, running on Bun.
+A Model Context Protocol (MCP) server that provides comprehensive task management capabilities through the Sunsama API. This server enables AI assistants to access Sunsama tasks, create new tasks, mark tasks complete, and manage your productivity workflow.
 
 ## Features
 
-- **Authentication**: Support for session token and email/password authentication
-- **Task Management**: Get tasks by day, access backlog, search tasks
-- **User Information**: Access user profile and settings
-- **Stream Management**: Get and manage Sunsama streams/channels
-- **Type Safety**: Full TypeScript support with Zod validation
+### Task Management
+- **Create Tasks** - Create new tasks with notes, time estimates, due dates, and stream assignments
+- **Read Tasks** - Get tasks by day with completion filtering, access backlog tasks
+- **Update Tasks** - Mark tasks as complete with custom timestamps
+- **Delete Tasks** - Permanently remove tasks from your workspace
+
+### User & Stream Operations
+- **User Information** - Access user profile, timezone, and group details
+- **Stream Management** - Get streams/channels for project organization
+- **Dual Transport** - Support for both stdio and HTTP stream MCP transports
 
 ## Installation
 
+### Prerequisites
+- [Bun](https://bun.sh) runtime (for development)
+- Sunsama account with API access
+
+### Using NPX (Recommended)
+No installation required! Use directly with:
 ```bash
-# Install dependencies
-bun install
-
-# Copy environment configuration
-cp .env.example .env
-
-# Edit .env with your credentials
+npx mcp-sunsama
 ```
 
-## Configuration
+### Development Setup
+1. Clone the repository:
+```bash
+git clone https://github.com/robertn702/mcp-sunsama.git
+cd mcp-sunsama
+```
 
-### Environment Variables
+2. Install dependencies:
+```bash
+bun install
+```
 
-- `API_KEY`: Your MCP server API key for authentication
-- `PORT`: Server port (default: 3002)
-- `SUNSAMA_SESSION_TOKEN`: Your Sunsama session token
-- `SUNSAMA_EMAIL` & `SUNSAMA_PASSWORD`: Alternative email/password auth
+3. Set up your environment variables:
+```bash
+cp .env.example .env
+# Edit .env and add your Sunsama credentials
+```
+
+Environment variables:
+- `SUNSAMA_EMAIL` - Your Sunsama account email (required for stdio transport)
+- `SUNSAMA_PASSWORD` - Your Sunsama account password (required for stdio transport)
+- `SUNSAMA_SESSION_TOKEN` - Alternative session token authentication (optional)
+- `PORT` - Server port for HTTP transport (default: 3002)
+- `MCP_TRANSPORT` - Transport type: `stdio` or `httpStream` (default: stdio)
 
 ## Usage
 
-### Development
+### Running the Server
+
+**Stdio Transport (default):**
 ```bash
-# Run in development mode
-bun run dev
-
-# Type checking
-bun run typecheck
-
-# MCP Inspector (for debugging)
-bun run inspect
+bun run src/main.ts
 ```
 
-### Production
+**HTTP Stream Transport:**
 ```bash
-# Build
-bun run build
-
-# Run built version
-bun src/main.ts
+MCP_TRANSPORT=httpStream PORT=3002 bun run src/main.ts
 ```
 
-## MCP Tools
+### Claude Desktop Configuration
 
-### User Operations
-- `get-user` - Get current user information including profile, timezone, and group details
-
-### Task Operations (Read)
-- `get-tasks-by-day` - Get tasks for a specific day with optional completion filtering
-- `get-tasks-backlog` - Get tasks from the backlog
-- `get-streams` - Get streams for the user's group (called "channels" in Sunsama UI)
-
-### Task Operations (Write)
-- `create-task` - Create a new task with optional properties (notes, streams, time estimate, due date, etc.)
-- `update-task-complete` - Mark a task as complete with optional completion timestamp
-- `delete-task` - Delete a task permanently
-
-## Integration
-
-Add to your MCP client configuration:
+Add this configuration to your Claude Desktop MCP settings:
 
 ```json
 {
   "mcpServers": {
     "sunsama": {
-      "command": "bun",
-      "args": ["--env-file=.env", "./src/main.ts"],
+      "command": "npx",
+      "args": ["mcp-sunsama"],
       "env": {
-        "PORT": "3002"
+        "SUNSAMA_EMAIL": "your-email@example.com",
+        "SUNSAMA_PASSWORD": "your-password"
       }
     }
   }
 }
 ```
 
-## Architecture
+## API Tools
 
-- **FastMCP Framework**: TypeScript MCP server framework
-- **Sunsama Client**: Wraps the [sunsama-api](https://github.com/robertn702/sunsama-api) client library
-- **Bun Runtime**: Fast JavaScript runtime and package manager
-- **Zod Validation**: Type-safe parameter validation
+### Task Management
+- `create-task` - Create new tasks with optional properties
+- `get-tasks-by-day` - Get tasks for a specific day with completion filtering
+- `get-tasks-backlog` - Get backlog tasks
+- `update-task-complete` - Mark tasks as complete
+- `delete-task` - Delete tasks permanently
+
+### User & Stream Operations
+- `get-user` - Get current user information
+- `get-streams` - Get streams/channels for project organization
+
+## Development
+
+### Running in Development
+```bash
+bun run dev
+```
+
+### Testing with MCP Inspector
+```bash
+bun run inspect
+```
+
+Then connect the MCP Inspector to test the tools interactively.
+
+### Build
+```bash
+bun run build
+```
+
+## Authentication
+
+**Stdio Transport:** Requires `SUNSAMA_EMAIL` and `SUNSAMA_PASSWORD` environment variables.
+
+**HTTP Transport:** The Sunsama credentials are passed in the HTTP request. No environment variables needed.
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Support
+
+- [Sunsama API Documentation](https://help.sunsama.com) 
+- [sunsama-api Library](https://github.com/robertn702/sunsama-api) - The underlying API client
+- [Model Context Protocol Documentation](https://modelcontextprotocol.io)
+- [Issue Tracker](https://github.com/robertn702/mcp-sunsama/issues)
