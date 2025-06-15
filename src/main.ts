@@ -311,6 +311,61 @@ server.addTool({
   }
 });
 
+server.addTool({
+  name: "delete-task",
+  description: "Delete a task permanently",
+  parameters: deleteTaskSchema,
+  execute: async (args, {session, log}) => {
+    try {
+      // Extract taskId and optional parameters
+      const { taskId, limitResponsePayload, wasTaskMerged } = args;
+      
+      log.info("Deleting task", {
+        taskId: taskId,
+        limitResponsePayload: limitResponsePayload,
+        wasTaskMerged: wasTaskMerged
+      });
+
+      // Get the appropriate client based on transport type
+      const sunsamaClient = getSunsamaClient(session as SessionData | null);
+
+      // Call sunsamaClient.deleteTask(taskId, limitResponsePayload, wasTaskMerged)
+      const result = await sunsamaClient.deleteTask(
+        taskId, 
+        limitResponsePayload, 
+        wasTaskMerged
+      );
+
+      log.info("Successfully deleted task", {
+        taskId: taskId,
+        success: result.success
+      });
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify({
+              success: result.success,
+              taskId: taskId,
+              deleted: true,
+              updatedFields: result.updatedFields
+            })
+          }
+        ]
+      };
+
+    } catch (error) {
+      log.error("Failed to delete task", {
+        taskId: args.taskId,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+
+      throw new Error(`Failed to delete task: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+});
+
 // Stream Operations
 server.addTool({
   name: "get-streams",
