@@ -64,9 +64,8 @@ The MCP server will follow the FastMCP pattern with:
 ## Authentication Strategy
 
 ### MCP Server Authentication
-- Use API key authentication for MCP server access
-- Follow mcp-closet-manager pattern with x-api-key header
-- Environment variable: `API_KEY`
+- Uses MCP's built-in transport authentication
+- No additional API key required
 
 ### Sunsama API Authentication
 - Use environment variables for Sunsama credentials:
@@ -113,7 +112,6 @@ The MCP server will follow the FastMCP pattern with:
 ```
 
 ## Environment Variables
-- `API_KEY`: MCP server authentication key
 - `SUNSAMA_EMAIL`: User email for Sunsama login
 - `SUNSAMA_PASSWORD`: User password for Sunsama login
 - `PORT`: Server port (default: 3000)
@@ -144,7 +142,7 @@ The MCP server will follow the FastMCP pattern with:
 - Use `npx fastmcp dev src/main.ts` for development
 - Use `npx fastmcp inspect src/main.ts` for debugging
 - Test with MCP Inspector for tool validation
-- Requires `API_KEY` environment variable for MCP server access
+- Uses MCP's built-in transport for server access
 
 ## Future Enhancements
 - Add task creation/update tools
