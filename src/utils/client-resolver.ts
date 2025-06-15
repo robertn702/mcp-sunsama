@@ -1,7 +1,7 @@
 import { SunsamaClient } from "sunsama-api";
-import { getTransportConfig } from "../config/transport.js";
 import { getGlobalSunsamaClient } from "../auth/stdio.js";
 import type { SessionData } from "../auth/types.js";
+import { getTransportConfig } from "../config/transport.js";
 
 /**
  * Gets the appropriate SunsamaClient instance based on transport type

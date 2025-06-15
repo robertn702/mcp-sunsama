@@ -29,18 +29,18 @@ const TransportEnvSchema = z.object({
 
 /**
  * Gets the transport configuration based on environment variables
- * 
+ *
  * Environment Variables:
  * - TRANSPORT_TYPE: "stdio" | "httpStream" (default: "stdio")
  * - PORT: HTTP server port (default: 3000, only for httpStream)
  * - HTTP_ENDPOINT: HTTP endpoint path (default: "/mcp", only for httpStream)
- * 
+ *
  * @throws {z.ZodError} When environment variables are invalid
  */
 export function getTransportConfig(): TransportConfig {
   try {
     const env = TransportEnvSchema.parse(process.env);
-    
+
     if (env.TRANSPORT_TYPE === "httpStream") {
       return {
         transportType: "httpStream",
@@ -56,7 +56,7 @@ export function getTransportConfig(): TransportConfig {
     };
   } catch (error) {
     if (error instanceof z.ZodError) {
-      const issues = error.issues.map(issue => 
+      const issues = error.issues.map(issue =>
         `${issue.path.join('.')}: ${issue.message}`
       ).join(', ');
       throw new Error(`Invalid transport configuration: ${issues}`);

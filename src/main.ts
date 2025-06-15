@@ -1,22 +1,22 @@
 import { FastMCP } from "fastmcp";
-import { getSunsamaClient } from "./utils/client-resolver.js";
+import type { CreateTaskOptions } from "sunsama-api";
 import { httpStreamAuthenticator } from "./auth/http.js";
 import { initializeStdioAuth } from "./auth/stdio.js";
 import type { SessionData } from "./auth/types.js";
 import { getTransportConfig } from "./config/transport.js";
-import type { CreateTaskOptions } from "sunsama-api";
-import { 
-  getStreamsSchema, 
-  getTasksBacklogSchema, 
-  getTasksByDaySchema, 
-  getUserSchema,
+import {
   createTaskSchema,
-  updateTaskCompleteSchema,
-  deleteTaskSchema
+  deleteTaskSchema,
+  getStreamsSchema,
+  getTasksBacklogSchema,
+  getTasksByDaySchema,
+  getUserSchema,
+  updateTaskCompleteSchema
 } from "./schemas.js";
-import { toTsv } from "./utils/to-tsv.js";
-import { trimTasksForResponse } from "./utils/task-trimmer.js";
+import { getSunsamaClient } from "./utils/client-resolver.js";
 import { filterTasksByCompletion } from "./utils/task-filters.js";
+import { trimTasksForResponse } from "./utils/task-trimmer.js";
+import { toTsv } from "./utils/to-tsv.js";
 
 // Get transport configuration with validation
 const transportConfig = getTransportConfig();
@@ -130,9 +130,9 @@ server.addTool({
     try {
       // Extract and set defaults for parameters
       const completionFilter = args.completionFilter || "all";
-      
+
       log.info("Getting tasks for day", {
-        day: args.day, 
+        day: args.day,
         timezone: args.timezone,
         completionFilter: completionFilter
       });
@@ -194,8 +194,8 @@ server.addTool({
   execute: async (args, {session, log}) => {
     try {
       // Extract parameters from args
-      const { text, notes, streamIds, timeEstimate, dueDate, snoozeUntil, private: isPrivate, taskId } = args;
-      
+      const {text, notes, streamIds, timeEstimate, dueDate, snoozeUntil, private: isPrivate, taskId} = args;
+
       log.info("Creating new task", {
         text: text,
         hasNotes: !!notes,
@@ -262,8 +262,8 @@ server.addTool({
   execute: async (args, {session, log}) => {
     try {
       // Extract taskId and optional parameters
-      const { taskId, completeOn, limitResponsePayload } = args;
-      
+      const {taskId, completeOn, limitResponsePayload} = args;
+
       log.info("Marking task as complete", {
         taskId: taskId,
         hasCustomCompleteOn: !!completeOn,
@@ -275,8 +275,8 @@ server.addTool({
 
       // Call sunsamaClient.updateTaskComplete(taskId, completeOn, limitResponsePayload)
       const result = await sunsamaClient.updateTaskComplete(
-        taskId, 
-        completeOn, 
+        taskId,
+        completeOn,
         limitResponsePayload
       );
 
@@ -318,8 +318,8 @@ server.addTool({
   execute: async (args, {session, log}) => {
     try {
       // Extract taskId and optional parameters
-      const { taskId, limitResponsePayload, wasTaskMerged } = args;
-      
+      const {taskId, limitResponsePayload, wasTaskMerged} = args;
+
       log.info("Deleting task", {
         taskId: taskId,
         limitResponsePayload: limitResponsePayload,
@@ -331,8 +331,8 @@ server.addTool({
 
       // Call sunsamaClient.deleteTask(taskId, limitResponsePayload, wasTaskMerged)
       const result = await sunsamaClient.deleteTask(
-        taskId, 
-        limitResponsePayload, 
+        taskId,
+        limitResponsePayload,
         wasTaskMerged
       );
 
@@ -519,14 +519,12 @@ Required environment variables:
   }
 });
 
-// Log startup information
-console.log(`Starting Sunsama MCP Server with transport: ${transportConfig.transportType}`);
-if (transportConfig.transportType === "httpStream") {
-  console.log(`HTTP Stream configuration: port=${transportConfig.httpStream?.port}, endpoint=${transportConfig.httpStream?.endpoint}`);
-}
 
 // Start server with dynamic transport configuration
 if (transportConfig.transportType === "httpStream") {
+  // Log startup information
+  console.log(`HTTP Stream configuration: port=${transportConfig.httpStream?.port}, endpoint=${transportConfig.httpStream?.endpoint}`);
+
   server.start({
     transportType: "httpStream",
     httpStream: {
@@ -541,5 +539,4 @@ if (transportConfig.transportType === "httpStream") {
   server.start({
     transportType: "stdio"
   });
-  console.log("Server started with stdio transport");
 }

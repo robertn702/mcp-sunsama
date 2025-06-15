@@ -1,6 +1,6 @@
+import { IncomingMessage } from "http";
 import { SunsamaClient } from "sunsama-api";
 import type { SessionData } from "./types.js";
-import { IncomingMessage } from "http";
 
 /**
  * Parse HTTP Basic Auth credentials from Authorization header
@@ -17,7 +17,7 @@ export function parseBasicAuth(authHeader: string): { email: string; password: s
     throw new Error("Invalid Basic Auth format");
   }
 
-  return { email, password };
+  return {email, password};
 }
 
 /**
@@ -28,25 +28,25 @@ export function parseBasicAuth(authHeader: string): { email: string; password: s
  */
 export async function httpStreamAuthenticator(request: IncomingMessage): Promise<SessionData> {
   const authHeader = request.headers["authorization"];
-  
+
   if (!authHeader || Array.isArray(authHeader) || !authHeader.startsWith('Basic ')) {
     throw new Response(null, {
       status: 401,
       statusText: "Unauthorized: Basic Auth required",
-      headers: { 'WWW-Authenticate': 'Basic realm="Sunsama MCP"' }
+      headers: {'WWW-Authenticate': 'Basic realm="Sunsama MCP"'}
     });
   }
 
   try {
     // Parse Basic Auth credentials
-    const { email, password } = parseBasicAuth(authHeader);
+    const {email, password} = parseBasicAuth(authHeader);
 
     // Create and authenticate SunsamaClient
     const sunsamaClient = new SunsamaClient();
     await sunsamaClient.login(email, password);
-    
+
     console.log(`HTTP session authenticated for user: ${email}`);
-    
+
     return {
       sunsamaClient,
       email
