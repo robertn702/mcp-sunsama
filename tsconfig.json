@@ -10,9 +10,13 @@
 
     // Bundler mode
     "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
-    "noEmit": true,
+    "noEmit": false,
+
+    // Build output configuration
+    "outDir": "dist",
+    "declaration": true,
+    "declarationMap": true,
 
     // Best practices
     "strict": true,
@@ -24,5 +28,9 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noPropertyAccessFromIndexSignature": false
-  }
+  },
+  "exclude": [
+    "dist",
+    "node_modules"
+  ]
 }
