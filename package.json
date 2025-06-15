@@ -16,7 +16,10 @@
     "typecheck": "bunx tsc --noEmit",
     "typecheck:watch": "bunx tsc --noEmit --watch",
     "build": "bunx tsc",
-    "inspect": "npx @modelcontextprotocol/inspector --config ./mcp-inspector.json --server sunsama"
+    "inspect": "npx @modelcontextprotocol/inspector --config ./mcp-inspector.json --server sunsama",
+    "changeset": "changeset",
+    "version": "changeset version",
+    "release": "bun run build && changeset publish"
   },
   "dependencies": {
     "@types/papaparse": "^5.3.16",
@@ -26,6 +29,7 @@
     "zod": "3.24.4"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.29.4",
     "@types/bun": "latest",
     "typescript": "^5"
   },
