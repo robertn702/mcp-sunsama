@@ -238,7 +238,6 @@ server.addTool({
               taskId: result.updatedFields?._id,
               title: text,
               created: true,
-              error: result.error,
               updatedFields: result.updatedFields
             })
           }
@@ -252,6 +251,62 @@ server.addTool({
       });
 
       throw new Error(`Failed to create task: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+});
+
+server.addTool({
+  name: "update-task-complete",
+  description: "Mark a task as complete with optional completion timestamp",
+  parameters: updateTaskCompleteSchema,
+  execute: async (args, {session, log}) => {
+    try {
+      // Extract taskId and optional parameters
+      const { taskId, completeOn, limitResponsePayload } = args;
+      
+      log.info("Marking task as complete", {
+        taskId: taskId,
+        hasCustomCompleteOn: !!completeOn,
+        limitResponsePayload: limitResponsePayload
+      });
+
+      // Get the appropriate client based on transport type
+      const sunsamaClient = getSunsamaClient(session as SessionData | null);
+
+      // Call sunsamaClient.updateTaskComplete(taskId, completeOn, limitResponsePayload)
+      const result = await sunsamaClient.updateTaskComplete(
+        taskId, 
+        completeOn, 
+        limitResponsePayload
+      );
+
+      log.info("Successfully marked task as complete", {
+        taskId: taskId,
+        success: result.success,
+        updatedFields: !!result.updatedFields
+      });
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify({
+              success: result.success,
+              taskId: taskId,
+              completed: true,
+              updatedFields: result.updatedFields
+            })
+          }
+        ]
+      };
+
+    } catch (error) {
+      log.error("Failed to mark task as complete", {
+        taskId: args.taskId,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+
+      throw new Error(`Failed to mark task as complete: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 });
