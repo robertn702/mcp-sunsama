@@ -7,7 +7,7 @@ A Model Context Protocol (MCP) server that provides comprehensive task managemen
 ### Task Management
 - **Create Tasks** - Create new tasks with notes, time estimates, due dates, and stream assignments
 - **Read Tasks** - Get tasks by day with completion filtering, access backlog tasks
-- **Update Tasks** - Mark tasks as complete with custom timestamps
+- **Update Tasks** - Mark tasks as complete with custom timestamps, reschedule tasks or move to backlog
 - **Delete Tasks** - Permanently remove tasks from your workspace
 
 ### User & Stream Operations
@@ -92,6 +92,7 @@ Add this configuration to your Claude Desktop MCP settings:
 - `get-tasks-by-day` - Get tasks for a specific day with completion filtering
 - `get-tasks-backlog` - Get backlog tasks
 - `update-task-complete` - Mark tasks as complete
+- `update-task-snooze-date` - Reschedule tasks to different dates or move to backlog
 - `delete-task` - Delete tasks permanently
 
 ### User & Stream Operations
