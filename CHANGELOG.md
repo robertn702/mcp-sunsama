@@ -1,5 +1,11 @@
 # mcp-sunsama
 
+## 0.2.2
+
+### Patch Changes
+
+- 177cf46: Fix ES module import error in sunsama-api dependency by patching directory imports to include explicit file extensions
+
 ## 0.2.1
 
 ### Patch Changes
