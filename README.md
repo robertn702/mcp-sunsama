@@ -28,7 +28,7 @@ cp .env.example .env
 
 - `API_KEY`: Your MCP server API key for authentication
 - `PORT`: Server port (default: 3002)
-- `SUNSAMA_SESSION_TOKEN`: Your Sunsama session token (recommended)
+- `SUNSAMA_SESSION_TOKEN`: Your Sunsama session token
 - `SUNSAMA_EMAIL` & `SUNSAMA_PASSWORD`: Alternative email/password auth
 
 ## Usage
@@ -56,17 +56,18 @@ bun src/main.ts
 
 ## MCP Tools
 
-### Authentication
-- `login` - Authenticate with email/password
-- `logout` - Clear session and logout
-- `check-auth` - Verify authentication status
+### User Operations
+- `get-user` - Get current user information including profile, timezone, and group details
 
-### Data Access
-- `get-user` - Get current user information
-- `get-tasks-by-day` - Get tasks for specific day
-- `get-tasks-backlog` - Get backlog tasks
-- `get-streams` - Get user's streams
-- `get-today-tasks` - Convenience method for today's tasks
+### Task Operations (Read)
+- `get-tasks-by-day` - Get tasks for a specific day with optional completion filtering
+- `get-tasks-backlog` - Get tasks from the backlog
+- `get-streams` - Get streams for the user's group (called "channels" in Sunsama UI)
+
+### Task Operations (Write)
+- `create-task` - Create a new task with optional properties (notes, streams, time estimate, due date, etc.)
+- `update-task-complete` - Mark a task as complete with optional completion timestamp
+- `delete-task` - Delete a task permanently
 
 ## Integration
 
@@ -89,6 +90,6 @@ Add to your MCP client configuration:
 ## Architecture
 
 - **FastMCP Framework**: TypeScript MCP server framework
-- **Sunsama Client**: Wraps the @sunsama-ts client library
+- **Sunsama Client**: Wraps the [sunsama-api](https://github.com/robertn702/sunsama-api) client library
 - **Bun Runtime**: Fast JavaScript runtime and package manager
 - **Zod Validation**: Type-safe parameter validation
