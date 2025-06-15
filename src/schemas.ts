@@ -32,6 +32,36 @@ export const getUserSchema = z.object({});
 export const getStreamsSchema = z.object({});
 
 /**
+ * Task Mutation Operation Schemas
+ */
+
+// Create task parameters
+export const createTaskSchema = z.object({
+  text: z.string().min(1, "Task text is required").describe("Task title/description"),
+  notes: z.string().optional().describe("Additional task notes"),
+  streamIds: z.array(z.string()).optional().describe("Array of stream IDs to associate with the task"),
+  timeEstimate: z.number().int().positive().optional().describe("Time estimate in minutes"),
+  dueDate: z.string().optional().describe("Due date string (ISO format)"),
+  snoozeUntil: z.string().optional().describe("Snooze until date string (ISO format)"),
+  private: z.boolean().optional().describe("Whether the task is private"),
+  taskId: z.string().optional().describe("Custom task ID (auto-generated if not provided)"),
+});
+
+// Update task complete parameters
+export const updateTaskCompleteSchema = z.object({
+  taskId: z.string().min(1, "Task ID is required").describe("The ID of the task to mark as complete"),
+  completeOn: z.string().optional().describe("Completion timestamp (ISO format). Defaults to current time"),
+  limitResponsePayload: z.boolean().optional().describe("Whether to limit the response payload size"),
+});
+
+// Delete task parameters
+export const deleteTaskSchema = z.object({
+  taskId: z.string().min(1, "Task ID is required").describe("The ID of the task to delete"),
+  limitResponsePayload: z.boolean().optional().describe("Whether to limit response size"),
+  wasTaskMerged: z.boolean().optional().describe("Whether the task was merged before deletion"),
+});
+
+/**
  * Response Type Schemas (for validation and documentation)
  */
 
@@ -125,6 +155,10 @@ export type GetTasksByDayInput = z.infer<typeof getTasksByDaySchema>;
 export type GetTasksBacklogInput = z.infer<typeof getTasksBacklogSchema>;
 export type GetUserInput = z.infer<typeof getUserSchema>;
 export type GetStreamsInput = z.infer<typeof getStreamsSchema>;
+
+export type CreateTaskInput = z.infer<typeof createTaskSchema>;
+export type UpdateTaskCompleteInput = z.infer<typeof updateTaskCompleteSchema>;
+export type DeleteTaskInput = z.infer<typeof deleteTaskSchema>;
 
 export type User = z.infer<typeof userSchema>;
 export type Task = z.infer<typeof taskSchema>;
