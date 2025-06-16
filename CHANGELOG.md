@@ -1,5 +1,16 @@
 # mcp-sunsama
 
+## 0.4.0
+
+### Minor Changes
+
+- 8955a8f: Update the task integration response object and include the url if available
+- 8955a8f: Add functional HTTP_ENDPOINT env variable
+
+### Patch Changes
+
+- 8955a8f: Improve transport configuration type safety with discriminated union and template literal validation
+
 ## 0.3.0
 
 ### Minor Changes

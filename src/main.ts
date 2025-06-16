@@ -30,7 +30,7 @@ if (transportConfig.transportType === "stdio") {
 
 const server = new FastMCP({
   name: "Sunsama API Server",
-  version: "0.3.0",
+  version: "0.4.0",
   instructions: `
 This MCP server provides access to the Sunsama API for task and project management.
 
