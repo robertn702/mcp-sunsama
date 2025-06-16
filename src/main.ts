@@ -28,7 +28,6 @@ if (transportConfig.transportType === "stdio") {
   await initializeStdioAuth();
 }
 
-
 const server = new FastMCP({
   name: "Sunsama API Server",
   version: "0.3.0",
@@ -593,18 +592,11 @@ if (transportConfig.transportType === "httpStream") {
   // Log startup information
   console.log(`HTTP Stream configuration: port=${transportConfig.httpStream?.port}, endpoint=${transportConfig.httpStream?.endpoint}`);
 
-  server.start({
-    transportType: "httpStream",
-    httpStream: {
-      port: transportConfig.httpStream!.port
-    }
-  }).then(() => {
+  server.start(transportConfig).then(() => {
     console.log(`Sunsama MCP Server running on port ${transportConfig.httpStream!.port}`);
     console.log(`HTTP endpoint: ${transportConfig.httpStream!.endpoint}`);
     console.log("Authentication: HTTP Basic Auth with Sunsama credentials");
   });
 } else {
-  server.start({
-    transportType: "stdio"
-  });
+  server.start(transportConfig);
 }

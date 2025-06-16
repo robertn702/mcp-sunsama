@@ -7,13 +7,17 @@ import { z } from "zod";
 
 export type TransportType = "stdio" | "httpStream";
 
-export interface TransportConfig {
-  transportType: TransportType;
-  httpStream?: {
-    port: number;
-    endpoint: string;
-  };
+export type TransportConfig =
+  | {
+  transportType: "stdio";
 }
+  | {
+  transportType: "httpStream";
+  httpStream: {
+    port: number;
+    endpoint: `/${string}`;
+  };
+};
 
 /**
  * Zod schema for validating transport-related environment variables
@@ -24,7 +28,9 @@ const TransportEnvSchema = z.object({
     .transform(val => parseInt(val, 10))
     .pipe(z.number().min(1).max(65535))
     .optional(),
-  HTTP_ENDPOINT: z.string().default("/mcp")
+  HTTP_ENDPOINT: z.string().refine(val => val.startsWith("/"), {
+    message: "HTTP_ENDPOINT must start with '/'"
+  }).transform(val => val as `/${string}`).default("/mcp")
 });
 
 /**
