@@ -141,3 +141,5 @@ When updating the version:
 **IMPORTANT**: Never commit the `dev/` directory or any of its files to git. This directory contains development data including sample API responses and testing data that should remain local only.
 
 **IMPORTANT**: Never include "Claude" in git commit messages. Keep commit messages professional and focused on the actual changes made.
+
+**Branch Naming Convention**: Use the format `{type}/{short-name}` where `{type}` follows conventional commit naming convention (feat, fix, chore, refactor, docs, style, test, ci, etc.).
