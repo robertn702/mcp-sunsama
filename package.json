@@ -16,7 +16,7 @@
     "typecheck": "bunx tsc --noEmit",
     "typecheck:watch": "bunx tsc --noEmit --watch",
     "build": "bunx tsc",
-    "inspect": "npx @modelcontextprotocol/inspector --config ./mcp-inspector.json --server sunsama",
+    "inspect": "bunx @modelcontextprotocol/inspector --config ./mcp-inspector.json --server sunsama",
     "changeset": "changeset",
     "version": "changeset version",
     "release": "bun run build && changeset publish",
