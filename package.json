@@ -19,7 +19,8 @@
     "inspect": "npx @modelcontextprotocol/inspector --config ./mcp-inspector.json --server sunsama",
     "changeset": "changeset",
     "version": "changeset version",
-    "release": "bun run build && changeset publish"
+    "release": "bun run build && changeset publish",
+    "prepublishOnly": "bun run build"
   },
   "dependencies": {
     "@types/papaparse": "^5.3.16",
