@@ -1,5 +1,11 @@
 # mcp-sunsama
 
+## 0.5.2
+
+### Patch Changes
+
+- Fix updateTaskSnoozeDate schema validation for null values by using proper union types
+
 ## 0.5.1
 
 ### Patch Changes
