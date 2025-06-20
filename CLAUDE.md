@@ -52,6 +52,14 @@ Two-tier optimization for large datasets:
 
 Always apply filtering before trimming for efficiency.
 
+### Enhanced Pagination Pattern
+The `get-archived-tasks` tool implements smart pagination:
+
+- **Limit+1 Pattern**: Fetches `requestedLimit + 1` to determine if more results exist
+- **Pagination Metadata**: Returns `hasMore` flag, `nextOffset`, and count information
+- **LLM Context**: Provides clear guidance for AI assistants on whether to continue fetching
+- **Response Format**: TSV data with pagination header for optimal processing
+
 ### Schema Architecture
 All tools use Zod schemas from `schemas.ts`:
 - Type-safe parameter validation
@@ -118,10 +126,10 @@ Optional:
 
 ### Task Operations
 Full CRUD support:
-- **Read**: `get-tasks-by-day`, `get-tasks-backlog`, `get-streams`
+- **Read**: `get-tasks-by-day`, `get-tasks-backlog`, `get-archived-tasks`, `get-streams`
 - **Write**: `create-task`, `update-task-complete`, `delete-task`
 
-All task operations support completion filtering and response trimming.
+Task read operations support response trimming. `get-tasks-by-day` includes completion filtering. `get-archived-tasks` includes enhanced pagination with hasMore flag for LLM decision-making.
 
 ### Testing Tools
 Use MCP Inspector for debugging: `bun run inspect`
@@ -139,7 +147,5 @@ When updating the version:
 ## Git Rules
 
 **IMPORTANT**: Never commit the `dev/` directory or any of its files to git. This directory contains development data including sample API responses and testing data that should remain local only.
-
-**IMPORTANT**: Never include "Claude" in git commit messages. Keep commit messages professional and focused on the actual changes made.
 
 **Branch Naming Convention**: Use the format `{type}/{short-name}` where `{type}` follows conventional commit naming convention (feat, fix, chore, refactor, docs, style, test, ci, etc.).

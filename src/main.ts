@@ -8,6 +8,7 @@ import { getTransportConfig } from "./config/transport.js";
 import {
   createTaskSchema,
   deleteTaskSchema,
+  getArchivedTasksSchema,
   getStreamsSchema,
   getTasksBacklogSchema,
   getTasksByDaySchema,
@@ -37,7 +38,7 @@ This MCP server provides access to the Sunsama API for task and project manageme
 Available tools:
 - Authentication: login, logout, check authentication status
 - User operations: get current user information
-- Task operations: get tasks by day, get backlog tasks
+- Task operations: get tasks by day, get backlog tasks, get archived tasks
 - Stream operations: get streams/channels for the user's group
 
 Authentication is required for all operations. You can either:
@@ -183,6 +184,79 @@ server.addTool({
       });
 
       throw new Error(`Failed to get tasks for ${args.day}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+});
+
+server.addTool({
+  name: "get-archived-tasks",
+  description: "Get archived tasks with optional pagination",
+  parameters: getArchivedTasksSchema,
+  execute: async (args, {session, log}) => {
+    try {
+      // Extract and set defaults for parameters
+      const offset = args.offset || 0;
+      const requestedLimit = args.limit || 100;
+      
+      // Fetch limit + 1 to determine if there are more results
+      const fetchLimit = requestedLimit + 1;
+
+      log.info("Getting archived tasks", {
+        offset,
+        requestedLimit,
+        fetchLimit
+      });
+
+      // Get the appropriate client based on transport type
+      const sunsamaClient = getSunsamaClient(session as SessionData | null);
+
+      // Get archived tasks (fetch limit + 1 to check for more)
+      const allTasks = await sunsamaClient.getArchivedTasks(offset, fetchLimit);
+
+      // Determine if there are more results and slice to requested limit
+      const hasMore = allTasks.length > requestedLimit;
+      const tasks = hasMore ? allTasks.slice(0, requestedLimit) : allTasks;
+
+      // Trim tasks to reduce response size while preserving essential data
+      const trimmedTasks = trimTasksForResponse(tasks);
+
+      // Create pagination metadata
+      const paginationInfo = {
+        offset,
+        limit: requestedLimit,
+        count: tasks.length,
+        hasMore,
+        nextOffset: hasMore ? offset + requestedLimit : null
+      };
+
+      log.info("Successfully retrieved archived tasks", {
+        totalReturned: tasks.length,
+        hasMore,
+        offset,
+        requestedLimit
+      });
+
+      // Create response with pagination metadata header and TSV data
+      const responseText = `# Pagination: offset=${paginationInfo.offset}, limit=${paginationInfo.limit}, count=${paginationInfo.count}, hasMore=${paginationInfo.hasMore}, nextOffset=${paginationInfo.nextOffset || 'null'}
+${toTsv(trimmedTasks)}`;
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: responseText
+          }
+        ]
+      };
+
+    } catch (error) {
+      log.error("Failed to get archived tasks", {
+        offset: args.offset,
+        limit: args.limit,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+
+      throw new Error(`Failed to get archived tasks: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 });
@@ -477,15 +551,32 @@ server.addResource({
       text: `# Sunsama MCP Server Documentation
 
 ## Overview
-This MCP server provides access to the Sunsama API for task and project management.
-Authentication is handled server-side using environment variables.
+This MCP server provides comprehensive access to the Sunsama API for task and project management.
+Supports dual transport modes with different authentication strategies.
+
+## Transport Modes
+
+### Stdio Transport (Default)
+- Single global authentication using environment variables
+- Session maintained for entire server lifetime
+- Best for single-user local development
+
+### HTTP Stream Transport  
+- Per-request authentication via HTTP Basic Auth
+- Session-isolated client instances
+- Supports multiple concurrent users
 
 ## Authentication
-The server authenticates to Sunsama using environment variables:
+
+### Stdio Transport
+Uses environment variables (authenticated once at startup):
 - \`SUNSAMA_EMAIL\`: Your Sunsama account email
 - \`SUNSAMA_PASSWORD\`: Your Sunsama account password
 
-Authentication happens automatically on server startup. No client-side authentication is required.
+### HTTP Stream Transport
+Uses HTTP Basic Auth headers (per-request authentication):
+- \`Authorization: Basic <base64(email:password)>\`
+- Credentials provided in each HTTP request
 
 ## Available Tools
 
@@ -494,93 +585,85 @@ Authentication happens automatically on server startup. No client-side authentic
   - Parameters: none
   - Returns: User object with profile, timezone, and primary group details
 
-### Task Operations
+### Task Management
 - **get-tasks-by-day**: Get tasks for a specific day with optional filtering
   - Parameters: 
     - \`day\` (required): Date in YYYY-MM-DD format
     - \`timezone\` (optional): Timezone string (e.g., "America/New_York")
-    - \`completionFilter\` (optional): Filter by completion status
-      - \`"all"\` (default): Return all tasks
-      - \`"incomplete"\`: Return only incomplete tasks
-      - \`"completed"\`: Return only completed tasks
-  - Returns: Array of filtered Task objects for the specified day
+    - \`completionFilter\` (optional): Filter by completion status ("all", "incomplete", "completed")
+  - Returns: TSV of filtered Task objects for the specified day
 
 - **get-tasks-backlog**: Get tasks from the backlog
   - Parameters: none  
-  - Returns: Array of Task objects from the backlog
+  - Returns: TSV of Task objects from the backlog
+
+- **get-archived-tasks**: Get archived tasks with optional pagination
+  - Parameters:
+    - \`offset\` (optional): Pagination offset (defaults to 0)
+    - \`limit\` (optional): Maximum number of tasks to return (defaults to 100, max: 1000)
+  - Returns: TSV of trimmed archived Task objects with pagination metadata header
+  - Pagination: Uses limit+1 pattern to determine if more results are available
+
+- **create-task**: Create a new task with optional properties
+  - Parameters:
+    - \`text\` (required): Task title/description
+    - \`notes\` (optional): Additional task notes
+    - \`streamIds\` (optional): Array of stream IDs to associate with task
+    - \`timeEstimate\` (optional): Time estimate in minutes
+    - \`dueDate\` (optional): Due date string (ISO format)
+    - \`snoozeUntil\` (optional): Snooze until date string (ISO format)
+    - \`private\` (optional): Whether the task is private
+    - \`taskId\` (optional): Custom task ID
+  - Returns: JSON with task creation result
+
+- **update-task-complete**: Mark a task as complete
+  - Parameters:
+    - \`taskId\` (required): The ID of the task to mark as complete
+    - \`completeOn\` (optional): Completion timestamp (ISO format)
+    - \`limitResponsePayload\` (optional): Whether to limit response size
+  - Returns: JSON with completion result
+
+- **delete-task**: Delete a task permanently
+  - Parameters:
+    - \`taskId\` (required): The ID of the task to delete
+    - \`limitResponsePayload\` (optional): Whether to limit response size
+    - \`wasTaskMerged\` (optional): Whether the task was merged before deletion
+  - Returns: JSON with deletion result
+
+- **update-task-snooze-date**: Reschedule tasks or move to backlog
+  - Parameters:
+    - \`taskId\` (required): The ID of the task to reschedule
+    - \`newDay\` (required): Target date in YYYY-MM-DD format, or null for backlog
+    - \`timezone\` (optional): Timezone string
+    - \`limitResponsePayload\` (optional): Whether to limit response size
+  - Returns: JSON with update result
 
 ### Stream Operations
 - **get-streams**: Get streams for the user's group
   - Parameters: none
-  - Returns: Array of Stream objects
-  - Note: Streams are called "channels" in the Sunsama UI. If a user requests channels, use this tool.
+  - Returns: TSV of Stream objects
+  - Note: Streams are called "channels" in the Sunsama UI
 
-## Data Types
-
-### User Object
-\`\`\`typescript
-{
-  _id: string;
-  email: string;
-  profile: {
-    _id: string;
-    email: string;
-    firstName: string;
-    lastName: string;
-    timezone: string;
-    avatarUrl?: string;
-  };
-  primaryGroup?: {
-    groupId: string;
-    name: string;
-    role?: string;
-  };
-}
-\`\`\`
-
-### Task Object
-\`\`\`typescript
-{
-  _id: string;
-  title: string;
-  description?: string;
-  status: string;
-  createdAt: string;
-  updatedAt: string;
-  scheduledDate?: string;
-  completedAt?: string;
-  streamId?: string;
-  userId: string;
-  groupId: string;
-}
-\`\`\`
-
-### Stream Object
-Note: Streams are called "channels" in the Sunsama UI.
-\`\`\`typescript
-{
-  _id: string;
-  name: string;
-  color?: string;
-  groupId: string;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
-\`\`\`
-
-## Error Handling
-- All operations require valid Sunsama authentication
-- Invalid dates will return validation errors
-- Network errors are handled gracefully with descriptive messages
-- Server maintains session state across tool calls
+## Response Optimization
+- **Task Filtering**: Applied before processing for efficiency
+- **Task Trimming**: Removes non-essential fields, reducing payload by 60-80%
+- **TSV Format**: Used for arrays to optimize data processing
 
 ## Environment Setup
-Required environment variables:
-- \`API_KEY\`: MCP server authentication key
+
+### Required (Stdio Transport)
 - \`SUNSAMA_EMAIL\`: Sunsama account email
 - \`SUNSAMA_PASSWORD\`: Sunsama account password
-- \`PORT\`: Server port (default: 3000)
+
+### Optional Configuration
+- \`TRANSPORT_TYPE\`: "stdio" (default) | "httpStream" 
+- \`PORT\`: Server port for HTTP transport (default: 3002)
+
+## Error Handling
+- Comprehensive parameter validation using Zod schemas
+- Graceful handling of network errors with descriptive messages
+- Session-specific error isolation in HTTP transport mode
+- Proper authentication error responses
       `.trim()
     };
   }
