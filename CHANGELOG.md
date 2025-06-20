@@ -1,5 +1,11 @@
 # mcp-sunsama
 
+## 0.5.1
+
+### Patch Changes
+
+- 005209d: Add prepublishOnly script to ensure build runs before publishing
+
 ## 0.5.0
 
 ### Minor Changes
