@@ -15,6 +15,7 @@ build/
 # IDE files
 .vscode/
 .idea/
+.claude/
 *.swp
 *.swo
 *~
@@ -53,7 +54,6 @@ coverage/
 .nyc_output/
 
 # TypeScript cache
-*.tsbuildinfo
 
 # Optional npm cache directory
 .npm
