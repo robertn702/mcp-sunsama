@@ -17,6 +17,12 @@ export const getTasksByDaySchema = z.object({
 // Get tasks backlog parameters (no parameters needed)
 export const getTasksBacklogSchema = z.object({});
 
+// Get archived tasks parameters
+export const getArchivedTasksSchema = z.object({
+  offset: z.number().int().min(0).optional().describe("Pagination offset (defaults to 0)"),
+  limit: z.number().int().min(1).max(1000).optional().describe("Maximum number of tasks to return (defaults to 100)"),
+});
+
 /**
  * User Operation Schemas
  */
@@ -161,6 +167,7 @@ export type CompletionFilter = z.infer<typeof completionFilterSchema>;
 
 export type GetTasksByDayInput = z.infer<typeof getTasksByDaySchema>;
 export type GetTasksBacklogInput = z.infer<typeof getTasksBacklogSchema>;
+export type GetArchivedTasksInput = z.infer<typeof getArchivedTasksSchema>;
 export type GetUserInput = z.infer<typeof getUserSchema>;
 export type GetStreamsInput = z.infer<typeof getStreamsSchema>;
 
