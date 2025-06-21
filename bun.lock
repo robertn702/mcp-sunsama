@@ -7,7 +7,7 @@
         "@types/papaparse": "^5.3.16",
         "fastmcp": "3.3.1",
         "papaparse": "^5.5.3",
-        "sunsama-api": "0.6.1",
+        "sunsama-api": "0.7.0",
         "zod": "3.24.4",
       },
       "devDependencies": {
@@ -426,7 +426,7 @@
 
     "strtok3": ["strtok3@10.3.1", "", { "dependencies": { "@tokenizer/token": "^0.3.0" } }, "sha512-3JWEZM6mfix/GCJBBUrkA8p2Id2pBkyTkVCJKto55w080QBKZ+8R171fGrbiSp+yMO/u6F8/yUh7K4V9K+YCnw=="],
 
-    "sunsama-api": ["sunsama-api@0.6.1", "", { "dependencies": { "graphql": "^16.11.0", "graphql-tag": "^2.12.6", "tough-cookie": "^5.1.2", "tslib": "^2.8.1", "yjs": "^13.6.27", "zod": "^3.25.64" } }, "sha512-4GhOdrAMo99JIXv9GZg7+NQJu1uPRgGbmnKFWTCNzXYiSVicNPNv27vgqHa3kJtPo19x8sBf4gOYZYlw6b1Wgw=="],
+    "sunsama-api": ["sunsama-api@0.7.0", "", { "dependencies": { "graphql": "^16.11.0", "graphql-tag": "^2.12.6", "tough-cookie": "^5.1.2", "tslib": "^2.8.1", "yjs": "^13.6.27", "zod": "^3.25.64" } }, "sha512-/wPvJrtE0rUftl7c+OuQdu27OYkTvd23jzcQoAUP2SilQ6QYnFeG/Fjdf6nfl/MFuz5B8mpviGJdSgqYjAkd0g=="],
 
     "term-size": ["term-size@2.2.1", "", {}, "sha512-wK0Ri4fOGjv/XPy8SBHZChl8CM7uMc5VML7SqiQ0zG7+J5Vr+RMQDoHa2CNT6KHUnTGIXH34UDMkPzAUyapBZg=="],
 
