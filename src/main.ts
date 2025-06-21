@@ -697,12 +697,17 @@ server.addTool({
   execute: async (args, {session, log}) => {
     try {
       // Extract parameters
-      const {taskId, content, limitResponsePayload} = args;
+      const {taskId, html, markdown, limitResponsePayload} = args;
+
+      // Create simplified content object with type and value
+      const content = html 
+        ? {type: "html" as const, value: html} 
+        : {type: "markdown" as const, value: markdown!};
 
       log.info("Updating task notes", {
         taskId: taskId,
-        contentType: 'html' in content ? 'html' : 'markdown',
-        contentLength: ('html' in content ? content.html : content.markdown).length,
+        contentType: content.type,
+        contentLength: content.value.length,
         limitResponsePayload: limitResponsePayload
       });
 
@@ -715,17 +720,20 @@ server.addTool({
       } = {};
       if (limitResponsePayload !== undefined) options.limitResponsePayload = limitResponsePayload;
 
-      // Call sunsamaClient.updateTaskNotes(taskId, content, options)
+      // Build content object for API call
+      const apiContent = content.type === "html" ? {html: content.value} : {markdown: content.value};
+
+      // Call sunsamaClient.updateTaskNotes(taskId, apiContent, options)
       const result = await sunsamaClient.updateTaskNotes(
         taskId,
-        content,
+        apiContent,
         options
       );
 
       log.info("Successfully updated task notes", {
         taskId: taskId,
         success: result.success,
-        contentType: 'html' in content ? 'html' : 'markdown'
+        contentType: content.type
       });
 
       return {
@@ -745,7 +753,7 @@ server.addTool({
     } catch (error) {
       log.error("Failed to update task notes", {
         taskId: args.taskId,
-        contentType: 'html' in args.content ? 'html' : 'markdown',
+        contentType: args.html ? 'html' : 'markdown',
         error: error instanceof Error ? error.message : 'Unknown error'
       });
 
@@ -893,11 +901,11 @@ Uses HTTP Basic Auth headers (per-request authentication):
 - **update-task-notes**: Update task notes content
   - Parameters:
     - \`taskId\` (required): The ID of the task to update notes for
-    - \`content\` (required): Task notes content in either HTML or Markdown format
-      - \`{html: string}\` OR \`{markdown: string}\` (mutually exclusive)
+    - \`html\` (required XOR): HTML content for the task notes
+    - \`markdown\` (required XOR): Markdown content for the task notes
     - \`limitResponsePayload\` (optional): Whether to limit response size (defaults to true)
   - Returns: JSON with update result
-  - Note: Supports both HTML and Markdown content with automatic format conversion
+  - Note: Exactly one of \`html\` or \`markdown\` must be provided (mutually exclusive)
 
 ### Stream Operations
 - **get-streams**: Get streams for the user's group
