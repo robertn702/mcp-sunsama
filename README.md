@@ -92,6 +92,7 @@ Add this configuration to your Claude Desktop MCP settings:
 - `get-tasks-by-day` - Get tasks for a specific day with completion filtering
 - `get-tasks-backlog` - Get backlog tasks
 - `get-archived-tasks` - Get archived tasks with pagination (includes hasMore flag for LLM context)
+- `get-task-by-id` - Get a specific task by its ID
 - `update-task-complete` - Mark tasks as complete
 - `update-task-snooze-date` - Reschedule tasks to different dates
 - `update-task-backlog` - Move tasks to the backlog

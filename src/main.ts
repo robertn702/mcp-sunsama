@@ -10,6 +10,7 @@ import {
   deleteTaskSchema,
   getArchivedTasksSchema,
   getStreamsSchema,
+  getTaskByIdSchema,
   getTasksBacklogSchema,
   getTasksByDaySchema,
   getUserSchema,
@@ -39,7 +40,7 @@ This MCP server provides access to the Sunsama API for task and project manageme
 Available tools:
 - Authentication: login, logout, check authentication status
 - User operations: get current user information
-- Task operations: get tasks by day, get backlog tasks, get archived tasks
+- Task operations: get tasks by day, get backlog tasks, get archived tasks, get task by ID
 - Stream operations: get streams/channels for the user's group
 
 Authentication is required for all operations. You can either:
@@ -258,6 +259,64 @@ ${toTsv(trimmedTasks)}`;
       });
 
       throw new Error(`Failed to get archived tasks: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+});
+
+server.addTool({
+  name: "get-task-by-id",
+  description: "Get a specific task by its ID",
+  parameters: getTaskByIdSchema,
+  execute: async (args, {session, log}) => {
+    try {
+      const {taskId} = args;
+
+      log.info("Getting task by ID", {
+        taskId: taskId
+      });
+
+      // Get the appropriate client based on transport type
+      const sunsamaClient = getSunsamaClient(session as SessionData | null);
+
+      // Get the specific task by ID
+      const task = await sunsamaClient.getTaskById(taskId);
+
+      if (task) {
+        log.info("Successfully retrieved task by ID", {
+          taskId: taskId,
+          taskText: task.text
+        });
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(task, null, 2)
+            }
+          ]
+        };
+      } else {
+        log.info("Task not found", {
+          taskId: taskId
+        });
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: "null"
+            }
+          ]
+        };
+      }
+
+    } catch (error) {
+      log.error("Failed to get task by ID", {
+        taskId: args.taskId,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+
+      throw new Error(`Failed to get task by ID: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 });
@@ -667,6 +726,11 @@ Uses HTTP Basic Auth headers (per-request authentication):
     - \`limit\` (optional): Maximum number of tasks to return (defaults to 100, max: 1000)
   - Returns: TSV of trimmed archived Task objects with pagination metadata header
   - Pagination: Uses limit+1 pattern to determine if more results are available
+
+- **get-task-by-id**: Get a specific task by its ID
+  - Parameters:
+    - \`taskId\` (required): The ID of the task to retrieve
+  - Returns: JSON with complete Task object if found, or null if not found
 
 - **create-task**: Create a new task with optional properties
   - Parameters:

@@ -126,7 +126,7 @@ Optional:
 
 ### Task Operations
 Full CRUD support:
-- **Read**: `get-tasks-by-day`, `get-tasks-backlog`, `get-archived-tasks`, `get-streams`
+- **Read**: `get-tasks-by-day`, `get-tasks-backlog`, `get-archived-tasks`, `get-task-by-id`, `get-streams`
 - **Write**: `create-task`, `update-task-complete`, `update-task-snooze-date`, `update-task-backlog`, `delete-task`
 
 Task read operations support response trimming. `get-tasks-by-day` includes completion filtering. `get-archived-tasks` includes enhanced pagination with hasMore flag for LLM decision-making.
