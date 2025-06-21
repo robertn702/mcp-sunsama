@@ -95,7 +95,7 @@ Add this configuration to your Claude Desktop MCP settings:
 - `get-task-by-id` - Get a specific task by its ID
 - `update-task-complete` - Mark tasks as complete
 - `update-task-planned-time` - Update the planned time (time estimate) for tasks
-- `update-task-notes` - Update task notes content (requires either `html` or `markdown` parameter)
+- `update-task-notes` - Update task notes content (requires either `html` or `markdown` parameter, mutually exclusive)
 - `update-task-snooze-date` - Reschedule tasks to different dates
 - `update-task-backlog` - Move tasks to the backlog
 - `delete-task` - Delete tasks permanently

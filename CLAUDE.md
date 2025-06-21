@@ -66,7 +66,8 @@ All tools use Zod schemas from `schemas.ts`:
 - Automatic TypeScript inference
 - Comprehensive parameter documentation
 - Union types for completion filters
-- XOR schema patterns for mutually exclusive parameters (e.g., `update-task-notes` requires either `html` OR `markdown`, but not both)
+- XOR schema patterns for mutually exclusive parameters using `.refine()` for MCP Inspector compatibility
+- Example: `update-task-notes` requires either `html` OR `markdown`, but not both
 
 ## Key Patterns
 

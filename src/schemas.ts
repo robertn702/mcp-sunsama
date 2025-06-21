@@ -107,24 +107,23 @@ export const updateTaskPlannedTimeSchema = z.object({
   limitResponsePayload: z.boolean().optional().describe("Whether to limit the response payload size"),
 });
 
-// Update task notes base parameters (without content)
-const updateTaskNotesBaseSchema = z.object({
+// Update task notes parameters with XOR content validation
+export const updateTaskNotesSchema = z.object({
   taskId: z.string().min(1, "Task ID is required").describe("The ID of the task to update notes for"),
+  html: z.string().optional().describe("HTML content for the task notes (mutually exclusive with markdown)"),
+  markdown: z.string().optional().describe("Markdown content for the task notes (mutually exclusive with html)"),
   limitResponsePayload: z.boolean().optional().describe("Whether to limit the response payload size (defaults to true)"),
-});
-
-// Update task notes parameters with XOR content
-export const updateTaskNotesSchema = updateTaskNotesBaseSchema.and(
-  z.union([
-    z.object({ 
-      html: z.string().describe("HTML content for the task notes"),
-      markdown: z.never().optional()
-    }),
-    z.object({ 
-      markdown: z.string().describe("Markdown content for the task notes"),
-      html: z.never().optional()
-    })
-  ])
+}).refine(
+  (data) => {
+    // Exactly one of html or markdown must be provided
+    const hasHtml = data.html !== undefined;
+    const hasMarkdown = data.markdown !== undefined;
+    return hasHtml !== hasMarkdown; // XOR: exactly one must be true
+  },
+  {
+    message: "Exactly one of 'html' or 'markdown' must be provided",
+    path: [], // This will show the error at the root level
+  }
 );
 
 /**
