@@ -23,6 +23,11 @@ export const getArchivedTasksSchema = z.object({
   limit: z.number().int().min(1).max(1000).optional().describe("Maximum number of tasks to return (defaults to 100)"),
 });
 
+// Get task by ID parameters
+export const getTaskByIdSchema = z.object({
+  taskId: z.string().min(1, "Task ID is required").describe("The ID of the task to retrieve"),
+});
+
 /**
  * User Operation Schemas
  */
@@ -175,6 +180,7 @@ export type CompletionFilter = z.infer<typeof completionFilterSchema>;
 export type GetTasksByDayInput = z.infer<typeof getTasksByDaySchema>;
 export type GetTasksBacklogInput = z.infer<typeof getTasksBacklogSchema>;
 export type GetArchivedTasksInput = z.infer<typeof getArchivedTasksSchema>;
+export type GetTaskByIdInput = z.infer<typeof getTaskByIdSchema>;
 export type GetUserInput = z.infer<typeof getUserSchema>;
 export type GetStreamsInput = z.infer<typeof getStreamsSchema>;
 
