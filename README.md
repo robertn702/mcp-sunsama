@@ -141,7 +141,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Support
 
-- [Sunsama API Documentation](https://help.sunsama.com) 
 - [sunsama-api Library](https://github.com/robertn702/sunsama-api) - The underlying API client
 - [Model Context Protocol Documentation](https://modelcontextprotocol.io)
 - [Issue Tracker](https://github.com/robertn702/mcp-sunsama/issues)
