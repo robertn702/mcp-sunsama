@@ -93,7 +93,8 @@ Add this configuration to your Claude Desktop MCP settings:
 - `get-tasks-backlog` - Get backlog tasks
 - `get-archived-tasks` - Get archived tasks with pagination (includes hasMore flag for LLM context)
 - `update-task-complete` - Mark tasks as complete
-- `update-task-snooze-date` - Reschedule tasks to different dates or move to backlog
+- `update-task-snooze-date` - Reschedule tasks to different dates
+- `update-task-backlog` - Move tasks to the backlog
 - `delete-task` - Delete tasks permanently
 
 ### User & Stream Operations

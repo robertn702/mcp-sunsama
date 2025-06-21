@@ -13,6 +13,7 @@ import {
   getTasksBacklogSchema,
   getTasksByDaySchema,
   getUserSchema,
+  updateTaskBacklogSchema,
   updateTaskCompleteSchema,
   updateTaskSnoozeDateSchema
 } from "./schemas.js";
@@ -503,6 +504,69 @@ server.addTool({
       });
 
       throw new Error(`Failed to update task snooze date: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+});
+
+server.addTool({
+  name: "update-task-backlog",
+  description: "Move a task to the backlog",
+  parameters: updateTaskBacklogSchema,
+  execute: async (args, {session, log}) => {
+    try {
+      // Extract parameters
+      const {taskId, timezone, limitResponsePayload} = args;
+
+      log.info("Moving task to backlog", {
+        taskId: taskId,
+        timezone: timezone,
+        limitResponsePayload: limitResponsePayload
+      });
+
+      // Get the appropriate client based on transport type
+      const sunsamaClient = getSunsamaClient(session as SessionData | null);
+
+      // Build options object
+      const options: {
+        timezone?: string;
+        limitResponsePayload?: boolean;
+      } = {};
+      if (timezone) options.timezone = timezone;
+      if (limitResponsePayload !== undefined) options.limitResponsePayload = limitResponsePayload;
+
+      // Call sunsamaClient.updateTaskSnoozeDate(taskId, null, options) to move to backlog
+      const result = await sunsamaClient.updateTaskSnoozeDate(
+        taskId,
+        null,
+        options
+      );
+
+      log.info("Successfully moved task to backlog", {
+        taskId: taskId,
+        success: result.success
+      });
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify({
+              success: result.success,
+              taskId: taskId,
+              movedToBacklog: true,
+              updatedFields: result.updatedFields
+            })
+          }
+        ]
+      };
+
+    } catch (error) {
+      log.error("Failed to move task to backlog", {
+        taskId: args.taskId,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+
+      throw new Error(`Failed to move task to backlog: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 });
