@@ -16,6 +16,7 @@ import {
   getUserSchema,
   updateTaskBacklogSchema,
   updateTaskCompleteSchema,
+  updateTaskPlannedTimeSchema,
   updateTaskSnoozeDateSchema
 } from "./schemas.js";
 import { getSunsamaClient } from "./utils/client-resolver.js";
@@ -41,6 +42,7 @@ Available tools:
 - Authentication: login, logout, check authentication status
 - User operations: get current user information
 - Task operations: get tasks by day, get backlog tasks, get archived tasks, get task by ID
+- Task mutations: create tasks, mark complete, delete tasks, reschedule tasks, update planned time
 - Stream operations: get streams/channels for the user's group
 
 Authentication is required for all operations. You can either:
@@ -626,6 +628,63 @@ server.addTool({
       });
 
       throw new Error(`Failed to move task to backlog: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+});
+
+server.addTool({
+  name: "update-task-planned-time",
+  description: "Update the planned time (time estimate) for a task",
+  parameters: updateTaskPlannedTimeSchema,
+  execute: async (args, {session, log}) => {
+    try {
+      // Extract parameters
+      const {taskId, timeEstimateMinutes, limitResponsePayload} = args;
+
+      log.info("Updating task planned time", {
+        taskId: taskId,
+        timeEstimateMinutes: timeEstimateMinutes,
+        limitResponsePayload: limitResponsePayload
+      });
+
+      // Get the appropriate client based on transport type
+      const sunsamaClient = getSunsamaClient(session as SessionData | null);
+
+      // Call sunsamaClient.updateTaskPlannedTime(taskId, timeEstimateMinutes, limitResponsePayload)
+      const result = await sunsamaClient.updateTaskPlannedTime(
+        taskId,
+        timeEstimateMinutes,
+        limitResponsePayload
+      );
+
+      log.info("Successfully updated task planned time", {
+        taskId: taskId,
+        timeEstimateMinutes: timeEstimateMinutes,
+        success: result.success
+      });
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify({
+              success: result.success,
+              taskId: taskId,
+              timeEstimateMinutes: timeEstimateMinutes,
+              updatedFields: result.updatedFields
+            })
+          }
+        ]
+      };
+
+    } catch (error) {
+      log.error("Failed to update task planned time", {
+        taskId: args.taskId,
+        timeEstimateMinutes: args.timeEstimateMinutes,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+
+      throw new Error(`Failed to update task planned time: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 });
