@@ -87,6 +87,13 @@ export const updateTaskBacklogSchema = z.object({
   limitResponsePayload: z.boolean().optional().describe("Whether to limit the response payload size"),
 });
 
+// Update task planned time parameters
+export const updateTaskPlannedTimeSchema = z.object({
+  taskId: z.string().min(1, "Task ID is required").describe("The ID of the task to update planned time for"),
+  timeEstimateMinutes: z.number().int().min(0).describe("Time estimate in minutes (use 0 to clear the time estimate)"),
+  limitResponsePayload: z.boolean().optional().describe("Whether to limit the response payload size"),
+});
+
 /**
  * Response Type Schemas (for validation and documentation)
  */
@@ -188,6 +195,7 @@ export type CreateTaskInput = z.infer<typeof createTaskSchema>;
 export type UpdateTaskCompleteInput = z.infer<typeof updateTaskCompleteSchema>;
 export type DeleteTaskInput = z.infer<typeof deleteTaskSchema>;
 export type UpdateTaskSnoozeDateInput = z.infer<typeof updateTaskSnoozeDateSchema>;
+export type UpdateTaskPlannedTimeInput = z.infer<typeof updateTaskPlannedTimeSchema>;
 
 export type User = z.infer<typeof userSchema>;
 export type Task = z.infer<typeof taskSchema>;

@@ -11,6 +11,7 @@ import {
   deleteTaskSchema,
   updateTaskSnoozeDateSchema,
   updateTaskBacklogSchema,
+  updateTaskPlannedTimeSchema,
   userProfileSchema,
   groupSchema,
   userSchema,
@@ -280,6 +281,73 @@ describe("Tool Parameter Schemas", () => {
       ).toThrow();
       expect(() =>
         updateTaskBacklogSchema.parse({})
+      ).toThrow();
+    });
+  });
+
+  describe("updateTaskPlannedTimeSchema", () => {
+    test("should accept valid task planned time input", () => {
+      const validInput = {
+        taskId: "task-123",
+        timeEstimateMinutes: 45,
+        limitResponsePayload: true,
+      };
+      expect(() => updateTaskPlannedTimeSchema.parse(validInput)).not.toThrow();
+    });
+
+    test("should accept minimal required input", () => {
+      const minimalInput = { 
+        taskId: "task-123", 
+        timeEstimateMinutes: 30 
+      };
+      expect(() => updateTaskPlannedTimeSchema.parse(minimalInput)).not.toThrow();
+    });
+
+    test("should accept zero time estimate", () => {
+      const zeroInput = { 
+        taskId: "task-123", 
+        timeEstimateMinutes: 0 
+      };
+      expect(() => updateTaskPlannedTimeSchema.parse(zeroInput)).not.toThrow();
+    });
+
+    test("should reject empty task ID", () => {
+      expect(() =>
+        updateTaskPlannedTimeSchema.parse({ 
+          taskId: "", 
+          timeEstimateMinutes: 30 
+        })
+      ).toThrow();
+      expect(() =>
+        updateTaskPlannedTimeSchema.parse({ 
+          timeEstimateMinutes: 30 
+        })
+      ).toThrow();
+    });
+
+    test("should reject negative time estimate", () => {
+      expect(() =>
+        updateTaskPlannedTimeSchema.parse({ 
+          taskId: "task-123", 
+          timeEstimateMinutes: -1 
+        })
+      ).toThrow();
+    });
+
+    test("should reject non-integer time estimate", () => {
+      expect(() =>
+        updateTaskPlannedTimeSchema.parse({ 
+          taskId: "task-123", 
+          timeEstimateMinutes: 30.5 
+        })
+      ).toThrow();
+    });
+
+    test("should reject missing time estimate", () => {
+      expect(() =>
+        updateTaskPlannedTimeSchema.parse({ 
+          taskId: "task-123" 
+        })
       ).toThrow();
     });
   });

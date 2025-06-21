@@ -94,6 +94,7 @@ Add this configuration to your Claude Desktop MCP settings:
 - `get-archived-tasks` - Get archived tasks with pagination (includes hasMore flag for LLM context)
 - `get-task-by-id` - Get a specific task by its ID
 - `update-task-complete` - Mark tasks as complete
+- `update-task-planned-time` - Update the planned time (time estimate) for tasks
 - `update-task-snooze-date` - Reschedule tasks to different dates
 - `update-task-backlog` - Move tasks to the backlog
 - `delete-task` - Delete tasks permanently
