@@ -1,5 +1,11 @@
 # mcp-sunsama
 
+## 0.10.2
+
+### Patch Changes
+
+- Upgrades sunsama package to 0.8.1. Fixes create-task tool snooze date
+
 ## 0.10.1
 
 ### Patch Changes
