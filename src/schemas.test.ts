@@ -12,6 +12,7 @@ import {
   updateTaskSnoozeDateSchema,
   updateTaskBacklogSchema,
   updateTaskPlannedTimeSchema,
+  updateTaskNotesSchema,
   userProfileSchema,
   groupSchema,
   userSchema,
@@ -349,6 +350,91 @@ describe("Tool Parameter Schemas", () => {
           taskId: "task-123" 
         })
       ).toThrow();
+    });
+  });
+
+  describe("updateTaskNotesSchema", () => {
+    test("should accept valid HTML content", () => {
+      const htmlInput = {
+        taskId: "task-123",
+        html: "<p>This is HTML content</p>",
+        limitResponsePayload: true,
+      };
+      expect(() => updateTaskNotesSchema.parse(htmlInput)).not.toThrow();
+    });
+
+    test("should accept valid Markdown content", () => {
+      const markdownInput = {
+        taskId: "task-123",
+        markdown: "# This is Markdown content",
+        limitResponsePayload: true,
+      };
+      expect(() => updateTaskNotesSchema.parse(markdownInput)).not.toThrow();
+    });
+
+    test("should accept minimal HTML input", () => {
+      const minimalHtmlInput = {
+        taskId: "task-123",
+        html: "<p>Simple HTML</p>",
+      };
+      expect(() => updateTaskNotesSchema.parse(minimalHtmlInput)).not.toThrow();
+    });
+
+    test("should accept minimal Markdown input", () => {
+      const minimalMarkdownInput = {
+        taskId: "task-123",
+        markdown: "Simple markdown",
+      };
+      expect(() => updateTaskNotesSchema.parse(minimalMarkdownInput)).not.toThrow();
+    });
+
+    test("should reject both HTML and Markdown provided", () => {
+      const invalidInput = {
+        taskId: "task-123",
+        html: "<p>HTML content</p>",
+        markdown: "Markdown content",
+      };
+      expect(() => updateTaskNotesSchema.parse(invalidInput)).toThrow();
+    });
+
+    test("should reject neither HTML nor Markdown provided", () => {
+      const invalidInput = {
+        taskId: "task-123",
+        limitResponsePayload: true,
+      };
+      expect(() => updateTaskNotesSchema.parse(invalidInput)).toThrow();
+    });
+
+    test("should reject empty task ID", () => {
+      expect(() =>
+        updateTaskNotesSchema.parse({
+          taskId: "",
+          html: "<p>Content</p>",
+        })
+      ).toThrow();
+      expect(() =>
+        updateTaskNotesSchema.parse({
+          markdown: "Content",
+        })
+      ).toThrow();
+    });
+
+    test("should accept empty HTML content", () => {
+      expect(() =>
+        updateTaskNotesSchema.parse({
+          taskId: "task-123",
+          html: "",
+        })
+      ).not.toThrow();
+    });
+
+    test("should accept empty Markdown content", () => {
+      expect(() =>
+        updateTaskNotesSchema.parse({
+          taskId: "task-123",
+          markdown: "",
+        })
+      ).not.toThrow();
     });
   });
 });

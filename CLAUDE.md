@@ -66,6 +66,7 @@ All tools use Zod schemas from `schemas.ts`:
 - Automatic TypeScript inference
 - Comprehensive parameter documentation
 - Union types for completion filters
+- XOR schema patterns for mutually exclusive parameters (e.g., `update-task-notes` requires either `html` OR `markdown`, but not both)
 
 ## Key Patterns
 
@@ -106,6 +107,7 @@ server.addTool({
 
 - `src/main.ts`: FastMCP server setup and tool definitions
 - `src/schemas.ts`: Zod validation schemas for all tools
+- `src/schemas.test.ts`: Comprehensive test suite for all Zod schemas including parameter validation, response schemas, and XOR patterns
 - `src/auth/`: Authentication strategies per transport type
 - `src/config/`: Environment configuration and validation
 - `src/utils/`: Reusable utilities (client resolution, filtering, formatting)

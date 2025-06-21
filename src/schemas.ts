@@ -1,6 +1,19 @@
 import { z } from "zod";
 
 /**
+ * Helper Schemas
+ */
+
+export const jsonStringSchema = z.string().transform((str, ctx) => {
+  try {
+    return JSON.parse(str);
+  } catch (error) {
+    ctx.addIssue({ code: 'custom', message: 'Invalid JSON' });
+    return z.NEVER;
+  }
+});
+
+/**
  * Task Operation Schemas
  */
 
@@ -94,19 +107,25 @@ export const updateTaskPlannedTimeSchema = z.object({
   limitResponsePayload: z.boolean().optional().describe("Whether to limit the response payload size"),
 });
 
-// Update task notes parameters
-export const updateTaskNotesSchema = z.object({
+// Update task notes base parameters (without content)
+const updateTaskNotesBaseSchema = z.object({
   taskId: z.string().min(1, "Task ID is required").describe("The ID of the task to update notes for"),
-  content: z.union([
-    z.object({ 
-      html: z.string().describe("HTML content for the task notes") 
-    }),
-    z.object({ 
-      markdown: z.string().describe("Markdown content for the task notes") 
-    })
-  ]).describe("Task notes content in either HTML or Markdown format"),
   limitResponsePayload: z.boolean().optional().describe("Whether to limit the response payload size (defaults to true)"),
 });
+
+// Update task notes parameters with XOR content
+export const updateTaskNotesSchema = updateTaskNotesBaseSchema.and(
+  z.union([
+    z.object({ 
+      html: z.string().describe("HTML content for the task notes"),
+      markdown: z.never().optional()
+    }),
+    z.object({ 
+      markdown: z.string().describe("Markdown content for the task notes"),
+      html: z.never().optional()
+    })
+  ])
+);
 
 /**
  * Response Type Schemas (for validation and documentation)
