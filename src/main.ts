@@ -16,6 +16,7 @@ import {
   getUserSchema,
   updateTaskBacklogSchema,
   updateTaskCompleteSchema,
+  updateTaskNotesSchema,
   updateTaskPlannedTimeSchema,
   updateTaskSnoozeDateSchema
 } from "./schemas.js";
@@ -42,7 +43,7 @@ Available tools:
 - Authentication: login, logout, check authentication status
 - User operations: get current user information
 - Task operations: get tasks by day, get backlog tasks, get archived tasks, get task by ID
-- Task mutations: create tasks, mark complete, delete tasks, reschedule tasks, update planned time
+- Task mutations: create tasks, mark complete, delete tasks, reschedule tasks, update planned time, update task notes
 - Stream operations: get streams/channels for the user's group
 
 Authentication is required for all operations. You can either:
@@ -689,6 +690,70 @@ server.addTool({
   }
 });
 
+server.addTool({
+  name: "update-task-notes",
+  description: "Update the notes content for a task",
+  parameters: updateTaskNotesSchema,
+  execute: async (args, {session, log}) => {
+    try {
+      // Extract parameters
+      const {taskId, content, limitResponsePayload} = args;
+
+      log.info("Updating task notes", {
+        taskId: taskId,
+        contentType: 'html' in content ? 'html' : 'markdown',
+        contentLength: ('html' in content ? content.html : content.markdown).length,
+        limitResponsePayload: limitResponsePayload
+      });
+
+      // Get the appropriate client based on transport type
+      const sunsamaClient = getSunsamaClient(session as SessionData | null);
+
+      // Build options object
+      const options: {
+        limitResponsePayload?: boolean;
+      } = {};
+      if (limitResponsePayload !== undefined) options.limitResponsePayload = limitResponsePayload;
+
+      // Call sunsamaClient.updateTaskNotes(taskId, content, options)
+      const result = await sunsamaClient.updateTaskNotes(
+        taskId,
+        content,
+        options
+      );
+
+      log.info("Successfully updated task notes", {
+        taskId: taskId,
+        success: result.success,
+        contentType: 'html' in content ? 'html' : 'markdown'
+      });
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify({
+              success: result.success,
+              taskId: taskId,
+              notesUpdated: true,
+              updatedFields: result.updatedFields
+            })
+          }
+        ]
+      };
+
+    } catch (error) {
+      log.error("Failed to update task notes", {
+        taskId: args.taskId,
+        contentType: 'html' in args.content ? 'html' : 'markdown',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+
+      throw new Error(`Failed to update task notes: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+});
+
 // Stream Operations
 server.addTool({
   name: "get-streams",
@@ -824,6 +889,15 @@ Uses HTTP Basic Auth headers (per-request authentication):
     - \`timezone\` (optional): Timezone string
     - \`limitResponsePayload\` (optional): Whether to limit response size
   - Returns: JSON with update result
+
+- **update-task-notes**: Update task notes content
+  - Parameters:
+    - \`taskId\` (required): The ID of the task to update notes for
+    - \`content\` (required): Task notes content in either HTML or Markdown format
+      - \`{html: string}\` OR \`{markdown: string}\` (mutually exclusive)
+    - \`limitResponsePayload\` (optional): Whether to limit response size (defaults to true)
+  - Returns: JSON with update result
+  - Note: Supports both HTML and Markdown content with automatic format conversion
 
 ### Stream Operations
 - **get-streams**: Get streams for the user's group
