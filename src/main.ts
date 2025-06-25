@@ -19,7 +19,8 @@ import {
   updateTaskDueDateSchema,
   updateTaskNotesSchema,
   updateTaskPlannedTimeSchema,
-  updateTaskSnoozeDateSchema
+  updateTaskSnoozeDateSchema,
+  updateTaskTextSchema
 } from "./schemas.js";
 import { getSunsamaClient } from "./utils/client-resolver.js";
 import { filterTasksByCompletion } from "./utils/task-filters.js";
@@ -44,7 +45,7 @@ Available tools:
 - Authentication: login, logout, check authentication status
 - User operations: get current user information
 - Task operations: get tasks by day, get backlog tasks, get archived tasks, get task by ID
-- Task mutations: create tasks, mark complete, delete tasks, reschedule tasks, update planned time, update task notes, update task due date
+- Task mutations: create tasks, mark complete, delete tasks, reschedule tasks, update planned time, update task notes, update task due date, update task text
 - Stream operations: get streams/channels for the user's group
 
 Authentication is required for all operations. You can either:
@@ -821,6 +822,73 @@ server.addTool({
   }
 });
 
+server.addTool({
+  name: "update-task-text",
+  description: "Update the text/title of a task",
+  parameters: updateTaskTextSchema,
+  execute: async (args, {session, log}) => {
+    try {
+      // Extract parameters
+      const {taskId, text, recommendedStreamId, limitResponsePayload} = args;
+
+      log.info("Updating task text", {
+        taskId: taskId,
+        text: text,
+        recommendedStreamId: recommendedStreamId,
+        limitResponsePayload: limitResponsePayload
+      });
+
+      // Get the appropriate client based on transport type
+      const sunsamaClient = getSunsamaClient(session as SessionData | null);
+
+      // Build options object
+      const options: {
+        recommendedStreamId?: string | null;
+        limitResponsePayload?: boolean;
+      } = {};
+      if (recommendedStreamId !== undefined) options.recommendedStreamId = recommendedStreamId;
+      if (limitResponsePayload !== undefined) options.limitResponsePayload = limitResponsePayload;
+
+      // Call sunsamaClient.updateTaskText(taskId, text, options)
+      const result = await sunsamaClient.updateTaskText(
+        taskId,
+        text,
+        options
+      );
+
+      log.info("Successfully updated task text", {
+        taskId: taskId,
+        text: text,
+        success: result.success
+      });
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify({
+              success: result.success,
+              taskId: taskId,
+              text: text,
+              textUpdated: true,
+              updatedFields: result.updatedFields
+            })
+          }
+        ]
+      };
+
+    } catch (error) {
+      log.error("Failed to update task text", {
+        taskId: args.taskId,
+        text: args.text,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+
+      throw new Error(`Failed to update task text: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+});
+
 // Stream Operations
 server.addTool({
   name: "get-streams",
@@ -970,6 +1038,14 @@ Uses HTTP Basic Auth headers (per-request authentication):
   - Parameters:
     - \`taskId\` (required): The ID of the task to update due date for
     - \`dueDate\` (required): Due date in ISO format (YYYY-MM-DDTHH:mm:ssZ) or null to clear the due date
+    - \`limitResponsePayload\` (optional): Whether to limit response size
+  - Returns: JSON with update result
+
+- **update-task-text**: Update the text/title of a task
+  - Parameters:
+    - \`taskId\` (required): The ID of the task to update
+    - \`text\` (required): The new text/title for the task
+    - \`recommendedStreamId\` (optional): Recommended stream ID
     - \`limitResponsePayload\` (optional): Whether to limit response size
   - Returns: JSON with update result
 
