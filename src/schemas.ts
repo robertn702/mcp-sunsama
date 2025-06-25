@@ -126,6 +126,16 @@ export const updateTaskNotesSchema = z.object({
   }
 );
 
+// Update task due date parameters
+export const updateTaskDueDateSchema = z.object({
+  taskId: z.string().min(1, "Task ID is required").describe("The ID of the task to update due date for"),
+  dueDate: z.union([
+    z.string().datetime("Must be a valid ISO date-time string"),
+    z.null()
+  ]).describe("Due date in ISO format (YYYY-MM-DDTHH:mm:ssZ) or null to clear the due date"),
+  limitResponsePayload: z.boolean().optional().describe("Whether to limit the response payload size"),
+});
+
 /**
  * Response Type Schemas (for validation and documentation)
  */
@@ -229,6 +239,7 @@ export type DeleteTaskInput = z.infer<typeof deleteTaskSchema>;
 export type UpdateTaskSnoozeDateInput = z.infer<typeof updateTaskSnoozeDateSchema>;
 export type UpdateTaskPlannedTimeInput = z.infer<typeof updateTaskPlannedTimeSchema>;
 export type UpdateTaskNotesInput = z.infer<typeof updateTaskNotesSchema>;
+export type UpdateTaskDueDateInput = z.infer<typeof updateTaskDueDateSchema>;
 
 export type User = z.infer<typeof userSchema>;
 export type Task = z.infer<typeof taskSchema>;

@@ -16,6 +16,7 @@ import {
   getUserSchema,
   updateTaskBacklogSchema,
   updateTaskCompleteSchema,
+  updateTaskDueDateSchema,
   updateTaskNotesSchema,
   updateTaskPlannedTimeSchema,
   updateTaskSnoozeDateSchema
@@ -43,7 +44,7 @@ Available tools:
 - Authentication: login, logout, check authentication status
 - User operations: get current user information
 - Task operations: get tasks by day, get backlog tasks, get archived tasks, get task by ID
-- Task mutations: create tasks, mark complete, delete tasks, reschedule tasks, update planned time, update task notes
+- Task mutations: create tasks, mark complete, delete tasks, reschedule tasks, update planned time, update task notes, update task due date
 - Stream operations: get streams/channels for the user's group
 
 Authentication is required for all operations. You can either:
@@ -762,6 +763,64 @@ server.addTool({
   }
 });
 
+server.addTool({
+  name: "update-task-due-date",
+  description: "Update the due date for a task",
+  parameters: updateTaskDueDateSchema,
+  execute: async (args, {session, log}) => {
+    try {
+      // Extract parameters
+      const {taskId, dueDate, limitResponsePayload} = args;
+
+      log.info("Updating task due date", {
+        taskId: taskId,
+        dueDate: dueDate,
+        limitResponsePayload: limitResponsePayload
+      });
+
+      // Get the appropriate client based on transport type
+      const sunsamaClient = getSunsamaClient(session as SessionData | null);
+
+      // Call sunsamaClient.updateTaskDueDate(taskId, dueDate, limitResponsePayload)
+      const result = await sunsamaClient.updateTaskDueDate(
+        taskId,
+        dueDate,
+        limitResponsePayload
+      );
+
+      log.info("Successfully updated task due date", {
+        taskId: taskId,
+        dueDate: dueDate,
+        success: result.success
+      });
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify({
+              success: result.success,
+              taskId: taskId,
+              dueDate: dueDate,
+              dueDateUpdated: true,
+              updatedFields: result.updatedFields
+            })
+          }
+        ]
+      };
+
+    } catch (error) {
+      log.error("Failed to update task due date", {
+        taskId: args.taskId,
+        dueDate: args.dueDate,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+
+      throw new Error(`Failed to update task due date: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+});
+
 // Stream Operations
 server.addTool({
   name: "get-streams",
@@ -906,6 +965,13 @@ Uses HTTP Basic Auth headers (per-request authentication):
     - \`limitResponsePayload\` (optional): Whether to limit response size (defaults to true)
   - Returns: JSON with update result
   - Note: Exactly one of \`html\` or \`markdown\` must be provided (mutually exclusive)
+
+- **update-task-due-date**: Update the due date for a task
+  - Parameters:
+    - \`taskId\` (required): The ID of the task to update due date for
+    - \`dueDate\` (required): Due date in ISO format (YYYY-MM-DDTHH:mm:ssZ) or null to clear the due date
+    - \`limitResponsePayload\` (optional): Whether to limit response size
+  - Returns: JSON with update result
 
 ### Stream Operations
 - **get-streams**: Get streams for the user's group
