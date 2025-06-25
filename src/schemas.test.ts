@@ -13,6 +13,7 @@ import {
   updateTaskBacklogSchema,
   updateTaskPlannedTimeSchema,
   updateTaskNotesSchema,
+  updateTaskDueDateSchema,
   userProfileSchema,
   groupSchema,
   userSchema,
@@ -435,6 +436,147 @@ describe("Tool Parameter Schemas", () => {
           markdown: "",
         })
       ).not.toThrow();
+    });
+  });
+
+  describe("updateTaskDueDateSchema", () => {
+    test("should accept valid ISO date string", () => {
+      const validInput = {
+        taskId: "task-123",
+        dueDate: "2024-06-21T04:00:00.000Z",
+        limitResponsePayload: true,
+      };
+      expect(() => updateTaskDueDateSchema.parse(validInput)).not.toThrow();
+    });
+
+    test("should accept valid ISO date-time string with Z timezone", () => {
+      const validInput = {
+        taskId: "task-123",
+        dueDate: "2024-06-21T14:30:00.000Z",
+        limitResponsePayload: false,
+      };
+      expect(() => updateTaskDueDateSchema.parse(validInput)).not.toThrow();
+    });
+
+    test("should accept null to clear due date", () => {
+      const validInput = {
+        taskId: "task-123",
+        dueDate: null,
+        limitResponsePayload: true,
+      };
+      expect(() => updateTaskDueDateSchema.parse(validInput)).not.toThrow();
+    });
+
+    test("should accept minimal required input with ISO date", () => {
+      const minimalInput = {
+        taskId: "task-123",
+        dueDate: "2024-06-21T09:00:00Z",
+      };
+      expect(() => updateTaskDueDateSchema.parse(minimalInput)).not.toThrow();
+    });
+
+    test("should accept minimal required input with null", () => {
+      const minimalInput = {
+        taskId: "task-123",
+        dueDate: null,
+      };
+      expect(() => updateTaskDueDateSchema.parse(minimalInput)).not.toThrow();
+    });
+
+    test("should reject empty task ID", () => {
+      expect(() =>
+        updateTaskDueDateSchema.parse({
+          taskId: "",
+          dueDate: "2024-06-21T09:00:00Z",
+        })
+      ).toThrow();
+      expect(() =>
+        updateTaskDueDateSchema.parse({
+          dueDate: "2024-06-21T09:00:00Z",
+        })
+      ).toThrow();
+    });
+
+    test("should reject invalid date formats", () => {
+      // Date-only format
+      expect(() =>
+        updateTaskDueDateSchema.parse({
+          taskId: "task-123",
+          dueDate: "2024-06-21",
+        })
+      ).toThrow();
+
+      // Non-ISO format
+      expect(() =>
+        updateTaskDueDateSchema.parse({
+          taskId: "task-123",
+          dueDate: "06/21/2024",
+        })
+      ).toThrow();
+
+      // Invalid ISO format
+      expect(() =>
+        updateTaskDueDateSchema.parse({
+          taskId: "task-123",
+          dueDate: "2024-06-21T25:00:00Z",
+        })
+      ).toThrow();
+
+      // Plain text
+      expect(() =>
+        updateTaskDueDateSchema.parse({
+          taskId: "task-123",
+          dueDate: "tomorrow",
+        })
+      ).toThrow();
+
+      // Empty string
+      expect(() =>
+        updateTaskDueDateSchema.parse({
+          taskId: "task-123",
+          dueDate: "",
+        })
+      ).toThrow();
+    });
+
+    test("should reject undefined due date", () => {
+      expect(() =>
+        updateTaskDueDateSchema.parse({
+          taskId: "task-123",
+          dueDate: undefined,
+        })
+      ).toThrow();
+    });
+
+    test("should reject missing due date", () => {
+      expect(() =>
+        updateTaskDueDateSchema.parse({
+          taskId: "task-123",
+        })
+      ).toThrow();
+    });
+
+    test("should reject non-string, non-null due date values", () => {
+      expect(() =>
+        updateTaskDueDateSchema.parse({
+          taskId: "task-123",
+          dueDate: new Date(),
+        })
+      ).toThrow();
+
+      expect(() =>
+        updateTaskDueDateSchema.parse({
+          taskId: "task-123",
+          dueDate: 1640995200000, // timestamp
+        })
+      ).toThrow();
+
+      expect(() =>
+        updateTaskDueDateSchema.parse({
+          taskId: "task-123",
+          dueDate: true,
+        })
+      ).toThrow();
     });
   });
 });
