@@ -14,6 +14,7 @@ import {
   updateTaskPlannedTimeSchema,
   updateTaskNotesSchema,
   updateTaskDueDateSchema,
+  updateTaskTextSchema,
   userProfileSchema,
   groupSchema,
   userSchema,
@@ -900,5 +901,95 @@ describe("Edge Cases and Error Handling", () => {
       getTasksByDaySchema.parse({ day: "2024-13-01" })
     ).not.toThrow(); // Regex allows invalid month/day numbers
     expect(() => getTasksByDaySchema.parse({ day: "24-01-01" })).toThrow(); // But rejects wrong format
+  });
+
+  describe("updateTaskTextSchema", () => {
+    test("should accept valid task text input", () => {
+      const validInput = {
+        taskId: "task-123",
+        text: "Updated task title",
+        recommendedStreamId: "stream-456",
+        limitResponsePayload: true,
+      };
+      expect(() => updateTaskTextSchema.parse(validInput)).not.toThrow();
+    });
+
+    test("should accept minimal required input", () => {
+      const minimalInput = {
+        taskId: "task-123",
+        text: "Simple task title",
+      };
+      expect(() => updateTaskTextSchema.parse(minimalInput)).not.toThrow();
+    });
+
+    test("should accept null recommended stream ID", () => {
+      const validInput = {
+        taskId: "task-123",
+        text: "Task with null stream",
+        recommendedStreamId: null,
+        limitResponsePayload: false,
+      };
+      expect(() => updateTaskTextSchema.parse(validInput)).not.toThrow();
+    });
+
+    test("should reject empty task ID", () => {
+      expect(() =>
+        updateTaskTextSchema.parse({
+          taskId: "",
+          text: "Valid text",
+        })
+      ).toThrow();
+      expect(() =>
+        updateTaskTextSchema.parse({
+          text: "Valid text",
+        })
+      ).toThrow();
+    });
+
+    test("should reject empty task text", () => {
+      expect(() =>
+        updateTaskTextSchema.parse({
+          taskId: "task-123",
+          text: "",
+        })
+      ).toThrow();
+      expect(() =>
+        updateTaskTextSchema.parse({
+          taskId: "task-123",
+        })
+      ).toThrow();
+    });
+
+    test("should reject invalid types", () => {
+      expect(() =>
+        updateTaskTextSchema.parse({
+          taskId: 123,
+          text: "Valid text",
+        })
+      ).toThrow();
+
+      expect(() =>
+        updateTaskTextSchema.parse({
+          taskId: "task-123",
+          text: 123,
+        })
+      ).toThrow();
+
+      expect(() =>
+        updateTaskTextSchema.parse({
+          taskId: "task-123",
+          text: "Valid text",
+          recommendedStreamId: 123,
+        })
+      ).toThrow();
+
+      expect(() =>
+        updateTaskTextSchema.parse({
+          taskId: "task-123",
+          text: "Valid text",
+          limitResponsePayload: "true",
+        })
+      ).toThrow();
+    });
   });
 });
