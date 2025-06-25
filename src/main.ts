@@ -998,7 +998,7 @@ Uses HTTP Basic Auth headers (per-request authentication):
     - \`streamIds\` (optional): Array of stream IDs to associate with task
     - \`timeEstimate\` (optional): Time estimate in minutes
     - \`dueDate\` (optional): Due date string (ISO format)
-    - \`snoozeUntil\` (optional): Snooze until date string (ISO format)
+    - \`snoozeUntil\` (optional): Snooze until date string (ISO format) - the date the task is scheduled for
     - \`private\` (optional): Whether the task is private
     - \`taskId\` (optional): Custom task ID
   - Returns: JSON with task creation result

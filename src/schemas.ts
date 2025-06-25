@@ -66,7 +66,7 @@ export const createTaskSchema = z.object({
   streamIds: z.array(z.string()).optional().describe("Array of stream IDs to associate with the task"),
   timeEstimate: z.number().int().positive().optional().describe("Time estimate in minutes"),
   dueDate: z.string().optional().describe("Due date string (ISO format)"),
-  snoozeUntil: z.string().optional().describe("Snooze until date string (ISO format)"),
+  snoozeUntil: z.string().optional().describe("Snooze until date string (ISO format) - the date the task is scheduled for"),
   private: z.boolean().optional().describe("Whether the task is private"),
   taskId: z.string().optional().describe("Custom task ID (auto-generated if not provided)"),
 });
