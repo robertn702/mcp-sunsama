@@ -72,18 +72,31 @@ All tools use Zod schemas from `schemas.ts`:
 ## Key Patterns
 
 ### Tool Structure
-Standard pattern for all MCP tools:
+Modern tool pattern using shared utilities and parameter destructuring:
 ```typescript
+// Old pattern (before refactoring)
 server.addTool({
   name: "tool-name",
   description: "...",
   parameters: toolSchema,
   execute: async (args, {session, log}) => {
-    // 1. Extract/validate parameters
-    // 2. Get client via getSunsamaClient(session)
+    const { param1, param2 } = args;
+    // Manual error handling, client resolution, etc.
+  }
+});
+
+// New pattern (current)
+export const toolName = createToolWrapper({
+  name: "tool-name", 
+  description: "...",
+  parameters: toolSchema,
+  execute: async ({ param1, param2 }: ToolInput, context: ToolContext) => {
+    // 1. Parameters automatically destructured and typed
+    // 2. Get client via getClient(context.session)
     // 3. Call sunsama-api methods
     // 4. Apply filtering/trimming if needed
-    // 5. Return formatted response
+    // 5. Return formatted response using formatters
+    // Error handling and logging handled by wrapper
   }
 });
 ```
@@ -106,17 +119,50 @@ server.addTool({
 
 ## Code Organization
 
-- `src/main.ts`: FastMCP server setup and tool definitions
-- `src/schemas.ts`: Zod validation schemas for all tools
-- `src/schemas.test.ts`: Comprehensive test suite for all Zod schemas including parameter validation, response schemas, and XOR patterns
-- `src/auth/`: Authentication strategies per transport type
-- `src/config/`: Environment configuration and validation
-- `src/utils/`: Reusable utilities (client resolution, filtering, formatting)
+### Refactored Modular Architecture (2024)
+
+The codebase has been refactored into a modular, resource-based architecture:
+
+```
+src/
+├── tools/
+│   ├── shared.ts          # Common utilities and tool wrapper patterns
+│   ├── user-tools.ts      # User operations (get-user)
+│   ├── task-tools.ts      # Task operations (14 tools)
+│   ├── stream-tools.ts    # Stream operations (get-streams)
+│   └── index.ts           # Export all tools
+├── resources/
+│   └── index.ts           # API documentation resource
+├── auth/                  # Authentication strategies per transport type
+├── config/                # Environment configuration and validation
+├── utils/                 # Reusable utilities (client resolution, filtering, formatting)
+├── schemas.ts             # Zod validation schemas for all tools
+├── schemas.test.ts        # Comprehensive test suite for all Zod schemas
+└── main.ts                # Streamlined server setup (47 lines vs 1162 before)
+```
+
+### Tool Architecture Improvements
+
+**Shared Utilities** (`tools/shared.ts`):
+- `createToolWrapper()`: Standardized error handling and logging wrapper
+- `getClient()`: Session-aware client resolution
+- `formatJsonResponse()`, `formatTsvResponse()`: Consistent response formatting
+- `formatPaginatedTsvResponse()`: Specialized pagination support
+
+**Resource-Based Organization**:
+- **User Tools**: Single tool for user operations
+- **Task Tools**: 14 tools organized by function (query, lifecycle, update)
+- **Stream Tools**: Single tool for stream operations
+
+**Type Safety Improvements**:
+- **Parameter Destructuring**: Function signatures directly destructure typed parameters
+- **Zod Schema Integration**: Full TypeScript inference from Zod schemas
+- **Eliminated `any` Types**: All parameters properly typed with generated types
 
 ## Important Notes
 
 ### Version Synchronization
-Always keep FastMCP server version in `src/main.ts` (line ~32) synchronized with `package.json` version.
+Always keep FastMCP server version in `src/main.ts` (line 19) synchronized with `package.json` version.
 
 ### Environment Variables
 Required for stdio transport:
@@ -144,7 +190,7 @@ Configure different server variants in `mcp-inspector.json` for testing various 
 
 When updating the version:
 1. Update `package.json` version (done automatically by changesets)
-2. Manually update the FastMCP server version in `src/main.ts`
+2. Manually update the FastMCP server version in `src/main.ts` (line 19)
 3. Both versions must be identical for consistency
 
 ## Git Rules
