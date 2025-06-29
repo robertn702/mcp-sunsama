@@ -1,5 +1,29 @@
 # mcp-sunsama
 
+## 0.12.0
+
+### Minor Changes
+
+- 763b5b4: feat: add update-task-stream tool for task stream/channel assignment
+
+  Add new `update-task-stream` tool that allows updating the stream/channel assignment for existing Sunsama tasks. This tool provides the ability to:
+
+  - Assign tasks to one or more streams/channels
+  - Clear stream assignments by providing an empty array
+  - Set a recommended stream ID for the task
+  - Control response payload size with limitResponsePayload option
+
+  The tool follows the established patterns for parameter validation, error handling, and response formatting. Includes comprehensive test coverage and updated documentation.
+
+- cde6e75: Add update-task-text tool for updating task titles/text
+
+  Implement new `update-task-text` MCP tool that allows updating the text/title of tasks using the Sunsama API. This tool follows the established patterns for task mutation operations and includes:
+
+  - Zod schema validation with comprehensive parameter documentation
+  - Support for optional recommended stream ID and response payload limiting
+  - Full test coverage with edge case validation
+  - Updated API documentation and README
+
 ## 0.11.0
 
 ### Minor Changes
