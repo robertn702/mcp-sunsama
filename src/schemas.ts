@@ -144,6 +144,14 @@ export const updateTaskTextSchema = z.object({
   limitResponsePayload: z.boolean().optional().describe("Whether to limit the response payload size"),
 });
 
+// Update task stream parameters
+export const updateTaskStreamSchema = z.object({
+  taskId: z.string().min(1, "Task ID is required").describe("The ID of the task to update stream assignment for"),
+  streamIds: z.array(z.string()).describe("Array of stream IDs to assign to the task (empty array clears all streams)"),
+  recommendedStreamId: z.string().nullable().optional().describe("Recommended stream ID for the task"),
+  limitResponsePayload: z.boolean().optional().describe("Whether to limit the response payload size"),
+});
+
 /**
  * Response Type Schemas (for validation and documentation)
  */
@@ -249,6 +257,7 @@ export type UpdateTaskPlannedTimeInput = z.infer<typeof updateTaskPlannedTimeSch
 export type UpdateTaskNotesInput = z.infer<typeof updateTaskNotesSchema>;
 export type UpdateTaskDueDateInput = z.infer<typeof updateTaskDueDateSchema>;
 export type UpdateTaskTextInput = z.infer<typeof updateTaskTextSchema>;
+export type UpdateTaskStreamInput = z.infer<typeof updateTaskStreamSchema>;
 
 export type User = z.infer<typeof userSchema>;
 export type Task = z.infer<typeof taskSchema>;
