@@ -14,6 +14,7 @@ import {
   updateTaskPlannedTimeSchema,
   updateTaskNotesSchema,
   updateTaskDueDateSchema,
+  updateTaskStreamSchema,
   updateTaskTextSchema,
   userProfileSchema,
   groupSchema,
@@ -576,6 +577,184 @@ describe("Tool Parameter Schemas", () => {
         updateTaskDueDateSchema.parse({
           taskId: "task-123",
           dueDate: true,
+        })
+      ).toThrow();
+    });
+  });
+
+  describe("updateTaskStreamSchema", () => {
+    test("should accept valid task stream assignment", () => {
+      const validInput = {
+        taskId: "task-123",
+        streamIds: ["stream-1", "stream-2"],
+        recommendedStreamId: "stream-1",
+        limitResponsePayload: true,
+      };
+      expect(() => updateTaskStreamSchema.parse(validInput)).not.toThrow();
+    });
+
+    test("should accept empty streamIds array", () => {
+      const validInput = {
+        taskId: "task-123",
+        streamIds: [],
+        recommendedStreamId: null,
+        limitResponsePayload: false,
+      };
+      expect(() => updateTaskStreamSchema.parse(validInput)).not.toThrow();
+    });
+
+    test("should accept single stream ID", () => {
+      const validInput = {
+        taskId: "task-123",
+        streamIds: ["stream-1"],
+        recommendedStreamId: "stream-1",
+      };
+      expect(() => updateTaskStreamSchema.parse(validInput)).not.toThrow();
+    });
+
+    test("should accept null recommendedStreamId", () => {
+      const validInput = {
+        taskId: "task-123",
+        streamIds: ["stream-1", "stream-2"],
+        recommendedStreamId: null,
+      };
+      expect(() => updateTaskStreamSchema.parse(validInput)).not.toThrow();
+    });
+
+    test("should accept undefined recommendedStreamId", () => {
+      const validInput = {
+        taskId: "task-123",
+        streamIds: ["stream-1"],
+      };
+      expect(() => updateTaskStreamSchema.parse(validInput)).not.toThrow();
+    });
+
+    test("should reject empty taskId", () => {
+      expect(() =>
+        updateTaskStreamSchema.parse({
+          taskId: "",
+          streamIds: ["stream-1"],
+        })
+      ).toThrow();
+    });
+
+    test("should reject missing taskId", () => {
+      expect(() =>
+        updateTaskStreamSchema.parse({
+          streamIds: ["stream-1"],
+        })
+      ).toThrow();
+    });
+
+    test("should reject missing streamIds", () => {
+      expect(() =>
+        updateTaskStreamSchema.parse({
+          taskId: "task-123",
+        })
+      ).toThrow();
+    });
+
+    test("should reject non-string task ID", () => {
+      expect(() =>
+        updateTaskStreamSchema.parse({
+          taskId: 123,
+          streamIds: ["stream-1"],
+        })
+      ).toThrow();
+
+      expect(() =>
+        updateTaskStreamSchema.parse({
+          taskId: null,
+          streamIds: ["stream-1"],
+        })
+      ).toThrow();
+
+      expect(() =>
+        updateTaskStreamSchema.parse({
+          taskId: undefined,
+          streamIds: ["stream-1"],
+        })
+      ).toThrow();
+    });
+
+    test("should reject non-array streamIds", () => {
+      expect(() =>
+        updateTaskStreamSchema.parse({
+          taskId: "task-123",
+          streamIds: "stream-1",
+        })
+      ).toThrow();
+
+      expect(() =>
+        updateTaskStreamSchema.parse({
+          taskId: "task-123",
+          streamIds: null,
+        })
+      ).toThrow();
+
+      expect(() =>
+        updateTaskStreamSchema.parse({
+          taskId: "task-123",
+          streamIds: undefined,
+        })
+      ).toThrow();
+    });
+
+    test("should reject non-string elements in streamIds array", () => {
+      expect(() =>
+        updateTaskStreamSchema.parse({
+          taskId: "task-123",
+          streamIds: [123, "stream-1"],
+        })
+      ).toThrow();
+
+      expect(() =>
+        updateTaskStreamSchema.parse({
+          taskId: "task-123",
+          streamIds: ["stream-1", null],
+        })
+      ).toThrow();
+
+      expect(() =>
+        updateTaskStreamSchema.parse({
+          taskId: "task-123",
+          streamIds: ["stream-1", undefined],
+        })
+      ).toThrow();
+    });
+
+    test("should reject non-string, non-null recommendedStreamId", () => {
+      expect(() =>
+        updateTaskStreamSchema.parse({
+          taskId: "task-123",
+          streamIds: ["stream-1"],
+          recommendedStreamId: 123,
+        })
+      ).toThrow();
+
+      expect(() =>
+        updateTaskStreamSchema.parse({
+          taskId: "task-123",
+          streamIds: ["stream-1"],
+          recommendedStreamId: true,
+        })
+      ).toThrow();
+    });
+
+    test("should reject non-boolean limitResponsePayload", () => {
+      expect(() =>
+        updateTaskStreamSchema.parse({
+          taskId: "task-123",
+          streamIds: ["stream-1"],
+          limitResponsePayload: "true",
+        })
+      ).toThrow();
+
+      expect(() =>
+        updateTaskStreamSchema.parse({
+          taskId: "task-123",
+          streamIds: ["stream-1"],
+          limitResponsePayload: 1,
         })
       ).toThrow();
     });

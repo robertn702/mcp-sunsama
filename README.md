@@ -98,6 +98,7 @@ Add this configuration to your Claude Desktop MCP settings:
 - `update-task-notes` - Update task notes content (requires either `html` or `markdown` parameter, mutually exclusive)
 - `update-task-due-date` - Update the due date for tasks (set or clear due dates)
 - `update-task-text` - Update the text/title of tasks
+- `update-task-stream` - Update the stream/channel assignment for tasks
 - `update-task-snooze-date` - Reschedule tasks to different dates
 - `update-task-backlog` - Move tasks to the backlog
 - `delete-task` - Delete tasks permanently
