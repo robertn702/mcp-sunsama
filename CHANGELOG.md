@@ -1,5 +1,17 @@
 # mcp-sunsama
 
+## 0.12.1
+
+### Patch Changes
+
+- Update update-task-stream tool to use sunsama-api updateTaskStream method
+
+  - Replaced direct GraphQL implementation with sunsama-api updateTaskStream method
+  - Changed parameter from `streamIds` array to single `streamId` for API compatibility
+  - Updated schema validation and tests to match new single stream parameter
+  - Removed `recommendedStreamId` parameter as it's not supported by the API method
+  - Improved error handling and logging consistency
+
 ## 0.12.0
 
 ### Minor Changes

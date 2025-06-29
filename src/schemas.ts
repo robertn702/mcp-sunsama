@@ -147,8 +147,7 @@ export const updateTaskTextSchema = z.object({
 // Update task stream parameters
 export const updateTaskStreamSchema = z.object({
   taskId: z.string().min(1, "Task ID is required").describe("The ID of the task to update stream assignment for"),
-  streamIds: z.array(z.string()).describe("Array of stream IDs to assign to the task (empty array clears all streams)"),
-  recommendedStreamId: z.string().nullable().optional().describe("Recommended stream ID for the task"),
+  streamId: z.string().min(1, "Stream ID is required").describe("Stream ID to assign to the task"),
   limitResponsePayload: z.boolean().optional().describe("Whether to limit the response payload size"),
 });
 

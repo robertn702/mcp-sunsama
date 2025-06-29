@@ -38,7 +38,7 @@ if (transportConfig.transportType === "stdio") {
 
 const server = new FastMCP({
   name: "Sunsama API Server",
-  version: "0.12.0",
+  version: "0.12.1",
   instructions: `
 This MCP server provides access to the Sunsama API for task and project management.
 
@@ -897,63 +897,27 @@ server.addTool({
   execute: async (args, {session, log}) => {
     try {
       // Extract parameters
-      const {taskId, streamIds, recommendedStreamId, limitResponsePayload} = args;
+      const {taskId, streamId, limitResponsePayload} = args;
 
       log.info("Updating task stream assignment", {
         taskId: taskId,
-        streamIds: streamIds,
-        recommendedStreamId: recommendedStreamId,
+        streamId: streamId,
         limitResponsePayload: limitResponsePayload
       });
 
       // Get the appropriate client based on transport type
       const sunsamaClient = getSunsamaClient(session as SessionData | null);
 
-      // Since updateTaskStream doesn't exist in the upstream library, we'll make a direct GraphQL request
-      const updateTaskStreamMutation = `
-        mutation updateTaskStream($input: UpdateTaskStreamInput!) {
-          updateTaskStream(input: $input) {
-            success
-            updatedTask {
-              _id
-              streamIds
-              recommendedStreamId
-            }
-            updatedFields {
-              _id
-              streamIds
-              recommendedStreamId
-            }
-          }
-        }
-      `;
-
-      const variables = {
-        input: {
-          taskId,
-          streamIds,
-          recommendedStreamId: recommendedStreamId || null,
-          limitResponsePayload: limitResponsePayload ?? true,
-        },
-      };
-
-      // Make the GraphQL request using the client's graphqlRequest method
-      const response = await (sunsamaClient as any).graphqlRequest({
-        operationName: 'updateTaskStream',
-        variables,
-        query: updateTaskStreamMutation,
-      });
-
-      if (!response.data) {
-        throw new Error('No response data received');
-      }
-
-      const result = response.data.updateTaskStream;
+      // Call the sunsama-api updateTaskStream method
+      const result = await sunsamaClient.updateTaskStream(
+        taskId,
+        streamId,
+        limitResponsePayload !== undefined ? limitResponsePayload : true
+      );
 
       log.info("Successfully updated task stream assignment", {
         taskId: taskId,
-        streamIds: streamIds,
-        recommendedStreamId: recommendedStreamId,
+        streamId: streamId,
         success: result.success
       });
 
@@ -964,8 +928,7 @@ server.addTool({
             text: JSON.stringify({
               success: result.success,
               taskId: taskId,
-              streamIds: streamIds,
-              recommendedStreamId: recommendedStreamId,
+              streamId: streamId,
               streamUpdated: true,
               updatedFields: result.updatedFields
             })
@@ -976,8 +939,7 @@ server.addTool({
     } catch (error) {
       log.error("Failed to update task stream assignment", {
         taskId: args.taskId,
-        streamIds: args.streamIds,
-        recommendedStreamId: args.recommendedStreamId,
+        streamId: args.streamId,
         error: error instanceof Error ? error.message : 'Unknown error'
       });
 
@@ -1149,8 +1111,7 @@ Uses HTTP Basic Auth headers (per-request authentication):
 - **update-task-stream**: Update the stream/channel assignment for a task
   - Parameters:
     - \`taskId\` (required): The ID of the task to update stream assignment for
-    - \`streamIds\` (required): Array of stream IDs to assign to the task (empty array clears all streams)
-    - \`recommendedStreamId\` (optional): Recommended stream ID for the task
+    - \`streamId\` (required): Stream ID to assign to the task
     - \`limitResponsePayload\` (optional): Whether to limit response size
   - Returns: JSON with update result
 
