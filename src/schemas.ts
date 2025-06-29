@@ -252,6 +252,7 @@ export type CreateTaskInput = z.infer<typeof createTaskSchema>;
 export type UpdateTaskCompleteInput = z.infer<typeof updateTaskCompleteSchema>;
 export type DeleteTaskInput = z.infer<typeof deleteTaskSchema>;
 export type UpdateTaskSnoozeDateInput = z.infer<typeof updateTaskSnoozeDateSchema>;
+export type UpdateTaskBacklogInput = z.infer<typeof updateTaskBacklogSchema>;
 export type UpdateTaskPlannedTimeInput = z.infer<typeof updateTaskPlannedTimeSchema>;
 export type UpdateTaskNotesInput = z.infer<typeof updateTaskNotesSchema>;
 export type UpdateTaskDueDateInput = z.infer<typeof updateTaskDueDateSchema>;

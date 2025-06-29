@@ -121,10 +121,39 @@ bun run inspect
 
 Then connect the MCP Inspector to test the tools interactively.
 
-### Build
+### Build and Type Checking
 ```bash
-bun run build
+bun run build              # Compile TypeScript to dist/
+bun run typecheck          # Run TypeScript type checking
+bun run typecheck:watch    # Watch mode type checking
 ```
+
+### Code Architecture
+
+The server is organized with a modular, resource-based architecture:
+
+```
+src/
+├── tools/
+│   ├── shared.ts          # Common utilities and patterns
+│   ├── user-tools.ts      # User operations (get-user)
+│   ├── task-tools.ts      # Task operations (14 tools)
+│   ├── stream-tools.ts    # Stream operations (get-streams)
+│   └── index.ts           # Export all tools
+├── resources/
+│   └── index.ts           # API documentation resource
+├── auth/                  # Authentication strategies
+├── config/                # Environment configuration
+├── utils/                 # Utilities (filtering, trimming, etc.)
+└── main.ts                # Server setup (47 lines vs 1162 before refactoring)
+```
+
+**Key Features:**
+- **Type Safety**: Full TypeScript typing with Zod schema validation
+- **Parameter Destructuring**: Clean, explicit function signatures
+- **Shared Utilities**: Common patterns extracted to reduce duplication
+- **Error Handling**: Standardized error handling across all tools
+- **Response Optimization**: Task filtering and trimming for large datasets
 
 ## Authentication
 
