@@ -1,11 +1,14 @@
 export const apiDocumentationResource = {
   uri: "sunsama://api/docs",
   name: "Sunsama API Documentation",
-  description: "Documentation for the Sunsama API endpoints and data structures",
+  description:
+    "Documentation for the Sunsama API endpoints and data structures",
   mimeType: "text/markdown",
-  load: async () => {
+  load: async (uri: URL, _args: any) => {
     return {
-      text: `# Sunsama MCP Server Documentation
+      contents: [{
+        uri: uri.href,
+        text: `# Sunsama MCP Server Documentation
 
 ## Overview
 This MCP server provides comprehensive access to the Sunsama API for task and project management.
@@ -157,7 +160,8 @@ Uses HTTP Basic Auth headers (per-request authentication):
 - Graceful handling of network errors with descriptive messages
 - Session-specific error isolation in HTTP transport mode
 - Proper authentication error responses
-      `.trim()
+      `.trim(),
+      }],
     };
-  }
+  },
 };
