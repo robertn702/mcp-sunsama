@@ -1,30 +1,28 @@
 import { z } from "zod";
 
 /**
- * Helper Schemas
- */
-
-export const jsonStringSchema = z.string().transform((str, ctx) => {
-  try {
-    return JSON.parse(str);
-  } catch (error) {
-    ctx.addIssue({ code: 'custom', message: 'Invalid JSON' });
-    return z.NEVER;
-  }
-});
-
-/**
  * Task Operation Schemas
  */
 
 // Completion filter schema
-export const completionFilterSchema = z.enum(["all", "incomplete", "completed"]);
+export const completionFilterSchema = z.enum([
+  "all",
+  "incomplete",
+  "completed",
+]);
 
 // Get tasks by day parameters
 export const getTasksByDaySchema = z.object({
-  day: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Day must be in YYYY-MM-DD format"),
-  timezone: z.string().optional().describe("Timezone string (e.g., 'America/New_York'). If not provided, uses user's default timezone"),
-  completionFilter: completionFilterSchema.optional().describe("Filter tasks by completion status. 'all' returns all tasks, 'incomplete' returns only incomplete tasks, 'completed' returns only completed tasks. Defaults to 'all'"),
+  day: z.string().regex(
+    /^\d{4}-\d{2}-\d{2}$/,
+    "Day must be in YYYY-MM-DD format",
+  ),
+  timezone: z.string().optional().describe(
+    "Timezone string (e.g., 'America/New_York'). If not provided, uses user's default timezone",
+  ),
+  completionFilter: completionFilterSchema.optional().describe(
+    "Filter tasks by completion status. 'all' returns all tasks, 'incomplete' returns only incomplete tasks, 'completed' returns only completed tasks. Defaults to 'all'",
+  ),
 });
 
 // Get tasks backlog parameters (no parameters needed)
@@ -32,13 +30,19 @@ export const getTasksBacklogSchema = z.object({});
 
 // Get archived tasks parameters
 export const getArchivedTasksSchema = z.object({
-  offset: z.number().int().min(0).optional().describe("Pagination offset (defaults to 0)"),
-  limit: z.number().int().min(1).max(1000).optional().describe("Maximum number of tasks to return (defaults to 100)"),
+  offset: z.number().int().min(0).optional().describe(
+    "Pagination offset (defaults to 0)",
+  ),
+  limit: z.number().int().min(1).max(1000).optional().describe(
+    "Maximum number of tasks to return (defaults to 100)",
+  ),
 });
 
 // Get task by ID parameters
 export const getTaskByIdSchema = z.object({
-  taskId: z.string().min(1, "Task ID is required").describe("The ID of the task to retrieve"),
+  taskId: z.string().min(1, "Task ID is required").describe(
+    "The ID of the task to retrieve",
+  ),
 });
 
 /**
@@ -61,58 +65,108 @@ export const getStreamsSchema = z.object({});
 
 // Create task parameters
 export const createTaskSchema = z.object({
-  text: z.string().min(1, "Task text is required").describe("Task title/description"),
+  text: z.string().min(1, "Task text is required").describe(
+    "Task title/description",
+  ),
   notes: z.string().optional().describe("Additional task notes"),
-  streamIds: z.array(z.string()).optional().describe("Array of stream IDs to associate with the task"),
-  timeEstimate: z.number().int().positive().optional().describe("Time estimate in minutes"),
+  streamIds: z.array(z.string()).optional().describe(
+    "Array of stream IDs to associate with the task",
+  ),
+  timeEstimate: z.number().int().positive().optional().describe(
+    "Time estimate in minutes",
+  ),
   dueDate: z.string().optional().describe("Due date string (ISO format)"),
-  snoozeUntil: z.string().optional().describe("Snooze until date string (ISO format) - the date the task is scheduled for"),
+  snoozeUntil: z.string().optional().describe(
+    "Snooze until date string (ISO format) - the date the task is scheduled for",
+  ),
   private: z.boolean().optional().describe("Whether the task is private"),
-  taskId: z.string().optional().describe("Custom task ID (auto-generated if not provided)"),
+  taskId: z.string().optional().describe(
+    "Custom task ID (auto-generated if not provided)",
+  ),
 });
 
 // Update task complete parameters
 export const updateTaskCompleteSchema = z.object({
-  taskId: z.string().min(1, "Task ID is required").describe("The ID of the task to mark as complete"),
-  completeOn: z.string().optional().describe("Completion timestamp (ISO format). Defaults to current time"),
-  limitResponsePayload: z.boolean().optional().describe("Whether to limit the response payload size"),
+  taskId: z.string().min(1, "Task ID is required").describe(
+    "The ID of the task to mark as complete",
+  ),
+  completeOn: z.string().optional().describe(
+    "Completion timestamp (ISO format). Defaults to current time",
+  ),
+  limitResponsePayload: z.boolean().optional().describe(
+    "Whether to limit the response payload size",
+  ),
 });
 
 // Delete task parameters
 export const deleteTaskSchema = z.object({
-  taskId: z.string().min(1, "Task ID is required").describe("The ID of the task to delete"),
-  limitResponsePayload: z.boolean().optional().describe("Whether to limit response size"),
-  wasTaskMerged: z.boolean().optional().describe("Whether the task was merged before deletion"),
+  taskId: z.string().min(1, "Task ID is required").describe(
+    "The ID of the task to delete",
+  ),
+  limitResponsePayload: z.boolean().optional().describe(
+    "Whether to limit response size",
+  ),
+  wasTaskMerged: z.boolean().optional().describe(
+    "Whether the task was merged before deletion",
+  ),
 });
 
 // Update task snooze date parameters
 export const updateTaskSnoozeDateSchema = z.object({
-  taskId: z.string().min(1, "Task ID is required").describe("The ID of the task to reschedule"),
-  newDay: z.string().date("Must be a valid date in YYYY-MM-DD format").describe("Target date in YYYY-MM-DD format"),
-  timezone: z.string().optional().describe("Timezone string (e.g., 'America/New_York'). If not provided, uses user's default timezone"),
-  limitResponsePayload: z.boolean().optional().describe("Whether to limit the response payload size"),
+  taskId: z.string().min(1, "Task ID is required").describe(
+    "The ID of the task to reschedule",
+  ),
+  newDay: z.string().date("Must be a valid date in YYYY-MM-DD format").describe(
+    "Target date in YYYY-MM-DD format",
+  ),
+  timezone: z.string().optional().describe(
+    "Timezone string (e.g., 'America/New_York'). If not provided, uses user's default timezone",
+  ),
+  limitResponsePayload: z.boolean().optional().describe(
+    "Whether to limit the response payload size",
+  ),
 });
 
 // Update task backlog parameters
 export const updateTaskBacklogSchema = z.object({
-  taskId: z.string().min(1, "Task ID is required").describe("The ID of the task to move to backlog"),
-  timezone: z.string().optional().describe("Timezone string (e.g., 'America/New_York'). If not provided, uses user's default timezone"),
-  limitResponsePayload: z.boolean().optional().describe("Whether to limit the response payload size"),
+  taskId: z.string().min(1, "Task ID is required").describe(
+    "The ID of the task to move to backlog",
+  ),
+  timezone: z.string().optional().describe(
+    "Timezone string (e.g., 'America/New_York'). If not provided, uses user's default timezone",
+  ),
+  limitResponsePayload: z.boolean().optional().describe(
+    "Whether to limit the response payload size",
+  ),
 });
 
 // Update task planned time parameters
 export const updateTaskPlannedTimeSchema = z.object({
-  taskId: z.string().min(1, "Task ID is required").describe("The ID of the task to update planned time for"),
-  timeEstimateMinutes: z.number().int().min(0).describe("Time estimate in minutes (use 0 to clear the time estimate)"),
-  limitResponsePayload: z.boolean().optional().describe("Whether to limit the response payload size"),
+  taskId: z.string().min(1, "Task ID is required").describe(
+    "The ID of the task to update planned time for",
+  ),
+  timeEstimateMinutes: z.number().int().min(0).describe(
+    "Time estimate in minutes (use 0 to clear the time estimate)",
+  ),
+  limitResponsePayload: z.boolean().optional().describe(
+    "Whether to limit the response payload size",
+  ),
 });
 
 // Update task notes parameters with XOR content validation
 export const updateTaskNotesSchema = z.object({
-  taskId: z.string().min(1, "Task ID is required").describe("The ID of the task to update notes for"),
-  html: z.string().optional().describe("HTML content for the task notes (mutually exclusive with markdown)"),
-  markdown: z.string().optional().describe("Markdown content for the task notes (mutually exclusive with html)"),
-  limitResponsePayload: z.boolean().optional().describe("Whether to limit the response payload size (defaults to true)"),
+  taskId: z.string().min(1, "Task ID is required").describe(
+    "The ID of the task to update notes for",
+  ),
+  html: z.string().optional().describe(
+    "HTML content for the task notes (mutually exclusive with markdown)",
+  ),
+  markdown: z.string().optional().describe(
+    "Markdown content for the task notes (mutually exclusive with html)",
+  ),
+  limitResponsePayload: z.boolean().optional().describe(
+    "Whether to limit the response payload size (defaults to true)",
+  ),
 }).refine(
   (data) => {
     // Exactly one of html or markdown must be provided
@@ -123,32 +177,52 @@ export const updateTaskNotesSchema = z.object({
   {
     message: "Exactly one of 'html' or 'markdown' must be provided",
     path: [], // This will show the error at the root level
-  }
+  },
 );
 
 // Update task due date parameters
 export const updateTaskDueDateSchema = z.object({
-  taskId: z.string().min(1, "Task ID is required").describe("The ID of the task to update due date for"),
+  taskId: z.string().min(1, "Task ID is required").describe(
+    "The ID of the task to update due date for",
+  ),
   dueDate: z.union([
     z.string().datetime("Must be a valid ISO date-time string"),
-    z.null()
-  ]).describe("Due date in ISO format (YYYY-MM-DDTHH:mm:ssZ) or null to clear the due date"),
-  limitResponsePayload: z.boolean().optional().describe("Whether to limit the response payload size"),
+    z.null(),
+  ]).describe(
+    "Due date in ISO format (YYYY-MM-DDTHH:mm:ssZ) or null to clear the due date",
+  ),
+  limitResponsePayload: z.boolean().optional().describe(
+    "Whether to limit the response payload size",
+  ),
 });
 
 // Update task text parameters
 export const updateTaskTextSchema = z.object({
-  taskId: z.string().min(1, "Task ID is required").describe("The ID of the task to update"),
-  text: z.string().min(1, "Task text is required").describe("The new text/title for the task"),
-  recommendedStreamId: z.string().nullable().optional().describe("Recommended stream ID (optional)"),
-  limitResponsePayload: z.boolean().optional().describe("Whether to limit the response payload size"),
+  taskId: z.string().min(1, "Task ID is required").describe(
+    "The ID of the task to update",
+  ),
+  text: z.string().min(1, "Task text is required").describe(
+    "The new text/title for the task",
+  ),
+  recommendedStreamId: z.string().nullable().optional().describe(
+    "Recommended stream ID (optional)",
+  ),
+  limitResponsePayload: z.boolean().optional().describe(
+    "Whether to limit the response payload size",
+  ),
 });
 
 // Update task stream parameters
 export const updateTaskStreamSchema = z.object({
-  taskId: z.string().min(1, "Task ID is required").describe("The ID of the task to update stream assignment for"),
-  streamId: z.string().min(1, "Stream ID is required").describe("Stream ID to assign to the task"),
-  limitResponsePayload: z.boolean().optional().describe("Whether to limit the response payload size"),
+  taskId: z.string().min(1, "Task ID is required").describe(
+    "The ID of the task to update stream assignment for",
+  ),
+  streamId: z.string().min(1, "Stream ID is required").describe(
+    "Stream ID to assign to the task",
+  ),
+  limitResponsePayload: z.boolean().optional().describe(
+    "Whether to limit the response payload size",
+  ),
 });
 
 /**
@@ -251,9 +325,13 @@ export type GetStreamsInput = z.infer<typeof getStreamsSchema>;
 export type CreateTaskInput = z.infer<typeof createTaskSchema>;
 export type UpdateTaskCompleteInput = z.infer<typeof updateTaskCompleteSchema>;
 export type DeleteTaskInput = z.infer<typeof deleteTaskSchema>;
-export type UpdateTaskSnoozeDateInput = z.infer<typeof updateTaskSnoozeDateSchema>;
+export type UpdateTaskSnoozeDateInput = z.infer<
+  typeof updateTaskSnoozeDateSchema
+>;
 export type UpdateTaskBacklogInput = z.infer<typeof updateTaskBacklogSchema>;
-export type UpdateTaskPlannedTimeInput = z.infer<typeof updateTaskPlannedTimeSchema>;
+export type UpdateTaskPlannedTimeInput = z.infer<
+  typeof updateTaskPlannedTimeSchema
+>;
 export type UpdateTaskNotesInput = z.infer<typeof updateTaskNotesSchema>;
 export type UpdateTaskDueDateInput = z.infer<typeof updateTaskDueDateSchema>;
 export type UpdateTaskTextInput = z.infer<typeof updateTaskTextSchema>;

@@ -1,29 +1,19 @@
 #!/usr/bin/env node
-import { FastMCP } from "fastmcp";
-import { httpStreamAuthenticator } from "./auth/http.js";
+// Try root import first, fallback to subpath if needed
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { initializeStdioAuth } from "./auth/stdio.js";
-import { getTransportConfig } from "./config/transport.js";
 import { allTools } from "./tools/index.js";
 import { apiDocumentationResource } from "./resources/index.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 
-// Get transport configuration with validation
-const transportConfig = getTransportConfig();
+// Async IIFE for top-level await and error handling
+(async () => {
+  await initializeStdioAuth();
 
-// For stdio transport, attempt authentication at startup with environment variables
-if (transportConfig.transportType === "stdio") {
-  try {
-    await initializeStdioAuth();
-    console.log("Sunsama authentication successful");
-  } catch (error) {
-    console.error("Failed to initialize Sunsama authentication:", error instanceof Error ? error.message : 'Unknown error');
-    console.error("Server will start but tools will retry authentication on first use");
-  }
-}
-
-const server = new FastMCP({
-  name: "Sunsama API Server",
-  version: "0.14.1",
-  instructions: `
+  const server = new McpServer({
+    name: "Sunsama API Server",
+    version: "0.14.1",
+    instructions: `
 This MCP server provides access to the Sunsama API for task and project management.
 
 Available tools:
@@ -38,31 +28,66 @@ Authentication is required for all operations. You can either:
 2. Use a session token if you have one
 
 The server maintains session state per MCP connection, so you only need to authenticate once per session.
-  `.trim(),
-  // dynamically handle authentication
-  ...(transportConfig.transportType === "httpStream" ? {
-    authenticate: httpStreamAuthenticator,
-  } : {})
-});
-
-// Register all tools
-allTools.forEach(tool => server.addTool(tool));
-
-// Register resources
-server.addResource(apiDocumentationResource);
-
-
-
-// Start server with dynamic transport configuration
-if (transportConfig.transportType === "httpStream") {
-  // Log startup information
-  console.log(`HTTP Stream configuration: port=${transportConfig.httpStream?.port}, endpoint=${transportConfig.httpStream?.endpoint}`);
-
-  server.start(transportConfig).then(() => {
-    console.log(`Sunsama MCP Server running on port ${transportConfig.httpStream!.port}`);
-    console.log(`HTTP endpoint: ${transportConfig.httpStream!.endpoint}`);
-    console.log("Authentication: HTTP Basic Auth with Sunsama credentials");
+    `.trim(),
   });
-} else {
-  server.start(transportConfig);
-}
+
+  // Register all tools with correct arguments
+  allTools.forEach((tool) => {
+    if (typeof tool.execute === "function") {
+      // Wrap execute to ensure MCP response format
+      const wrappedExecute = async (args: any, extra: any) => {
+        const result = await tool.execute(args);
+        // Ensure result is an object with 'content' array of correct type
+        if (result && Array.isArray(result.content)) {
+          return {
+            ...result,
+            content: result.content.map((item: any) => ({
+              ...item,
+              type: "text",
+              text: item.text ?? JSON.stringify(item, null, 2),
+            })),
+          };
+        }
+        // Fallback: wrap result in content array
+        return {
+          content: [
+            {
+              type: "text",
+              text: typeof result === "string"
+                ? result
+                : JSON.stringify(result, null, 2),
+            } as { [x: string]: unknown; type: "text"; text: string },
+          ],
+        };
+      };
+      server.registerTool(tool.name, {
+        description: tool.description,
+        inputSchema: "shape" in tool.parameters
+          ? tool.parameters.shape
+          : tool.parameters,
+      }, wrappedExecute);
+    }
+  });
+
+  const transport = new StdioServerTransport();
+
+  // Register resources
+  server.registerResource(
+    apiDocumentationResource.name,
+    apiDocumentationResource.uri,
+    {
+      title: apiDocumentationResource.name,
+      description: apiDocumentationResource.description,
+      mimeType: apiDocumentationResource.mimeType,
+    },
+    apiDocumentationResource.load,
+  );
+
+  // Start server with dynamic transport configuration
+  try {
+    await server.connect(transport);
+  } catch (err) {
+    console.error("Failed to start MCP server:", err);
+    process.exit(1);
+  }
+})();
