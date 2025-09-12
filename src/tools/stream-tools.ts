@@ -1,20 +1,19 @@
-import { getStreamsSchema, type GetStreamsInput } from "../schemas.js";
-import { createToolWrapper, getClient, formatTsvResponse, type ToolContext } from "./shared.js";
+import { type GetStreamsInput, getStreamsSchema } from "../schemas.js";
+import { formatTsvResponse } from "./shared.js";
 
-export const getStreamsTool = createToolWrapper({
+import { getSunsamaClient } from "../utils/client-resolver.js";
+
+export const getStreamsTool = {
   name: "get-streams",
-  description: "Get streams for the user's group (streams are called 'channels' in the Sunsama UI)",
+  description:
+    "Get streams for the user's group (streams are called 'channels' in the Sunsama UI)",
   parameters: getStreamsSchema,
-  execute: async (_args: GetStreamsInput, context: ToolContext) => {
-    context.log.info("Getting streams for user's group");
-
-    const sunsamaClient = getClient(context.session);
+  execute: async (args: GetStreamsInput) => {
+    const sunsamaClient = getSunsamaClient();
     const streams = await sunsamaClient.getStreamsByGroupId();
 
-    context.log.info("Successfully retrieved streams", { count: streams.length });
-
     return formatTsvResponse(streams);
-  }
-});
+  },
+};
 
 export const streamTools = [getStreamsTool];

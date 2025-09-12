@@ -5,7 +5,7 @@ import { streamTools } from "./stream-tools.js";
 export const allTools = [
   ...userTools,
   ...taskTools,
-  ...streamTools
+  ...streamTools,
 ];
 
 export * from "./user-tools.js";

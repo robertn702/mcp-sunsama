@@ -1,20 +1,18 @@
-import { getUserSchema, type GetUserInput } from "../schemas.js";
-import { createToolWrapper, getClient, formatJsonResponse, type ToolContext } from "./shared.js";
+import { type GetUserInput, getUserSchema } from "../schemas.js";
+import { getSunsamaClient } from "../utils/client-resolver.js";
+import { formatJsonResponse } from "./shared.js";
 
-export const getUserTool = createToolWrapper({
+export const getUserTool = {
   name: "get-user",
-  description: "Get current user information including profile, timezone, and group details",
+  description:
+    "Get current user information including profile, timezone, and group details",
   parameters: getUserSchema,
-  execute: async (_args: GetUserInput, context: ToolContext) => {
-    context.log.info("Getting user information");
-
-    const sunsamaClient = getClient(context.session);
+  execute: async (_args: GetUserInput) => {
+    const sunsamaClient = getSunsamaClient();
     const user = await sunsamaClient.getUser();
 
-    context.log.info("Successfully retrieved user information", { userId: user._id });
-
     return formatJsonResponse(user);
-  }
-});
+  },
+};
 
 export const userTools = [getUserTool];
