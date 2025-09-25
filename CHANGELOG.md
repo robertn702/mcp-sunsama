@@ -1,5 +1,16 @@
 # mcp-sunsama
 
+## 0.14.0
+
+### Minor Changes
+
+- Upgrade FastMCP dependency from 3.3.1 to 3.18.0
+
+  - Updated FastMCP to latest version for improved MCP protocol support and performance
+  - Added comprehensive CONTRIBUTING.md documentation with release process
+  - Improved README documentation structure
+  - All existing functionality remains compatible
+
 ## 0.13.0
 
 ### Minor Changes

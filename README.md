@@ -128,6 +128,9 @@ bun run typecheck          # Run TypeScript type checking
 bun run typecheck:watch    # Watch mode type checking
 ```
 
+### Release Process
+For information on creating releases and publishing to npm, see [CONTRIBUTING.md](CONTRIBUTING.md#release-process).
+
 ### Code Architecture
 
 The server is organized with a modular, resource-based architecture:
@@ -163,10 +166,17 @@ src/
 
 ## Contributing
 
-1. Fork the repository
-2. Create a feature branch
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines on:
+- Development workflow
+- Code style and conventions
+- Testing requirements
+- Release process (for maintainers)
+
+Quick start:
+1. Fork and clone the repository
+2. Install dependencies: `bun install`
 3. Make your changes
-4. Add tests if applicable
+4. Create a changeset: `bun run changeset`
 5. Submit a pull request
 
 ## License
