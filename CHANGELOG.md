@@ -1,5 +1,13 @@
 # mcp-sunsama
 
+## 0.14.1
+
+### Patch Changes
+
+- fix: resolve stdio authentication race condition
+
+  Fixes critical race condition in stdio authentication that caused "Global Sunsama client not initialized" errors and -32800 request cancelled errors in Raycast and other MCP clients. Implements lazy authentication with promise caching to prevent concurrent auth attempts and adds graceful startup error handling.
+
 ## 0.14.0
 
 ### Minor Changes
