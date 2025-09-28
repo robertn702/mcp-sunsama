@@ -1,6 +1,5 @@
 import type { Context } from "fastmcp";
 import type { SessionData } from "../auth/types.js";
-import { getSunsamaClient } from "../utils/client-resolver.js";
 import { toTsv } from "../utils/to-tsv.js";
 
 export type ToolContext = Context<SessionData>;
@@ -41,12 +40,6 @@ export function createToolWrapper<T>(config: {
   };
 }
 
-/**
- * Gets the Sunsama client for the current session
- */
-export function getClient(session: SessionData | undefined | null) {
-  return getSunsamaClient(session as SessionData | null);
-}
 
 /**
  * Formats data as JSON response

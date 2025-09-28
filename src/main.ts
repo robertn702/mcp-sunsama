@@ -9,9 +9,15 @@ import { apiDocumentationResource } from "./resources/index.js";
 // Get transport configuration with validation
 const transportConfig = getTransportConfig();
 
-// For stdio transport, authenticate at startup with environment variables
+// For stdio transport, attempt authentication at startup with environment variables
 if (transportConfig.transportType === "stdio") {
-  await initializeStdioAuth();
+  try {
+    await initializeStdioAuth();
+    console.log("Sunsama authentication successful");
+  } catch (error) {
+    console.error("Failed to initialize Sunsama authentication:", error instanceof Error ? error.message : 'Unknown error');
+    console.error("Server will start but tools will retry authentication on first use");
+  }
 }
 
 const server = new FastMCP({

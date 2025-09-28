@@ -1,5 +1,6 @@
 import { getUserSchema, type GetUserInput } from "../schemas.js";
-import { createToolWrapper, getClient, formatJsonResponse, type ToolContext } from "./shared.js";
+import { getSunsamaClient } from "../utils/client-resolver.js";
+import { createToolWrapper, formatJsonResponse, type ToolContext } from "./shared.js";
 
 export const getUserTool = createToolWrapper({
   name: "get-user",
@@ -8,7 +9,7 @@ export const getUserTool = createToolWrapper({
   execute: async (_args: GetUserInput, context: ToolContext) => {
     context.log.info("Getting user information");
 
-    const sunsamaClient = getClient(context.session);
+    const sunsamaClient = await getSunsamaClient(context.session);
     const user = await sunsamaClient.getUser();
 
     context.log.info("Successfully retrieved user information", { userId: user._id });
