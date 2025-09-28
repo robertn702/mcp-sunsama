@@ -5,19 +5,19 @@ import { getTransportConfig } from "../config/transport.js";
 
 /**
  * Gets the appropriate SunsamaClient instance based on transport type
- * @param session - Session data for HTTP transport (null for stdio)
- * @returns Authenticated SunsamaClient instance
+ * @param session - Session data for HTTP transport (undefined/null for stdio)
+ * @returns Promise<SunsamaClient> Authenticated SunsamaClient instance
  * @throws {Error} If session is not available for HTTP transport or global client not initialized for stdio
  */
-export function getSunsamaClient(session: SessionData | null): SunsamaClient {
+export async function getSunsamaClient(session?: SessionData | null): Promise<SunsamaClient> {
   const transportConfig = getTransportConfig();
-  
+
   if (transportConfig.transportType === "httpStream") {
     if (!session?.sunsamaClient) {
       throw new Error("Session not available. Authentication may have failed.");
     }
     return session.sunsamaClient;
   }
-  
-  return getGlobalSunsamaClient();
+
+  return await getGlobalSunsamaClient();
 }

@@ -31,9 +31,9 @@ import {
 } from "../schemas.js";
 import { filterTasksByCompletion } from "../utils/task-filters.js";
 import { trimTasksForResponse } from "../utils/task-trimmer.js";
+import { getSunsamaClient } from "../utils/client-resolver.js";
 import {
   createToolWrapper,
-  getClient,
   formatJsonResponse,
   formatTsvResponse,
   formatPaginatedTsvResponse,
@@ -48,7 +48,7 @@ export const getTasksBacklogTool = createToolWrapper({
   execute: async (_args: GetTasksBacklogInput, context: ToolContext) => {
     context.log.info("Getting backlog tasks");
 
-    const sunsamaClient = getClient(context.session);
+    const sunsamaClient = await getSunsamaClient(context.session);
     const tasks = await sunsamaClient.getTasksBacklog();
     const trimmedTasks = trimTasksForResponse(tasks);
 
@@ -69,7 +69,7 @@ export const getTasksByDayTool = createToolWrapper({
       completionFilter
     });
 
-    const sunsamaClient = getClient(context.session);
+    const sunsamaClient = await getSunsamaClient(context.session);
 
     // If no timezone provided, get the user's default timezone
     let resolvedTimezone = timezone;
@@ -108,7 +108,7 @@ export const getArchivedTasksTool = createToolWrapper({
       fetchLimit
     });
 
-    const sunsamaClient = getClient(context.session);
+    const sunsamaClient = await getSunsamaClient(context.session);
     const allTasks = await sunsamaClient.getArchivedTasks(offset, fetchLimit);
 
     const hasMore = allTasks.length > requestedLimit;
@@ -141,7 +141,7 @@ export const getTaskByIdTool = createToolWrapper({
   execute: async ({ taskId }: GetTaskByIdInput, context: ToolContext) => {
     context.log.info("Getting task by ID", { taskId });
 
-    const sunsamaClient = getClient(context.session);
+    const sunsamaClient = await getSunsamaClient(context.session);
     const task = await sunsamaClient.getTaskById(taskId);
 
     if (task) {
@@ -175,7 +175,7 @@ export const createTaskTool = createToolWrapper({
       customTaskId: !!taskId
     });
 
-    const sunsamaClient = getClient(context.session);
+    const sunsamaClient = await getSunsamaClient(context.session);
 
     const options: CreateTaskOptions = {};
     if (notes) options.notes = notes;
@@ -216,7 +216,7 @@ export const deleteTaskTool = createToolWrapper({
       wasTaskMerged
     });
 
-    const sunsamaClient = getClient(context.session);
+    const sunsamaClient = await getSunsamaClient(context.session);
     const result = await sunsamaClient.deleteTask(taskId, limitResponsePayload, wasTaskMerged);
 
     context.log.info("Successfully deleted task", {
@@ -246,7 +246,7 @@ export const updateTaskCompleteTool = createToolWrapper({
       limitResponsePayload
     });
 
-    const sunsamaClient = getClient(context.session);
+    const sunsamaClient = await getSunsamaClient(context.session);
     const result = await sunsamaClient.updateTaskComplete(taskId, completeOn, limitResponsePayload);
 
     context.log.info("Successfully marked task as complete", {
@@ -277,7 +277,7 @@ export const updateTaskSnoozeDateTool = createToolWrapper({
       limitResponsePayload
     });
 
-    const sunsamaClient = getClient(context.session);
+    const sunsamaClient = await getSunsamaClient(context.session);
 
     const options: { timezone?: string; limitResponsePayload?: boolean } = {};
     if (timezone) options.timezone = timezone;
@@ -312,7 +312,7 @@ export const updateTaskBacklogTool = createToolWrapper({
       limitResponsePayload
     });
 
-    const sunsamaClient = getClient(context.session);
+    const sunsamaClient = await getSunsamaClient(context.session);
 
     const options: { timezone?: string; limitResponsePayload?: boolean } = {};
     if (timezone) options.timezone = timezone;
@@ -346,7 +346,7 @@ export const updateTaskPlannedTimeTool = createToolWrapper({
       limitResponsePayload
     });
 
-    const sunsamaClient = getClient(context.session);
+    const sunsamaClient = await getSunsamaClient(context.session);
     const result = await sunsamaClient.updateTaskPlannedTime(taskId, timeEstimateMinutes, limitResponsePayload);
 
     context.log.info("Successfully updated task planned time", {
@@ -381,7 +381,7 @@ export const updateTaskNotesTool = createToolWrapper({
       limitResponsePayload
     });
 
-    const sunsamaClient = getClient(context.session);
+    const sunsamaClient = await getSunsamaClient(context.session);
 
     const options: { limitResponsePayload?: boolean } = {};
     if (limitResponsePayload !== undefined) options.limitResponsePayload = limitResponsePayload;
@@ -416,7 +416,7 @@ export const updateTaskDueDateTool = createToolWrapper({
       limitResponsePayload
     });
 
-    const sunsamaClient = getClient(context.session);
+    const sunsamaClient = await getSunsamaClient(context.session);
     const result = await sunsamaClient.updateTaskDueDate(taskId, dueDate, limitResponsePayload);
 
     context.log.info("Successfully updated task due date", {
@@ -448,7 +448,7 @@ export const updateTaskTextTool = createToolWrapper({
       limitResponsePayload
     });
 
-    const sunsamaClient = getClient(context.session);
+    const sunsamaClient = await getSunsamaClient(context.session);
 
     const options: { recommendedStreamId?: string | null; limitResponsePayload?: boolean } = {};
     if (recommendedStreamId !== undefined) options.recommendedStreamId = recommendedStreamId;
@@ -484,7 +484,7 @@ export const updateTaskStreamTool = createToolWrapper({
       limitResponsePayload
     });
 
-    const sunsamaClient = getClient(context.session);
+    const sunsamaClient = await getSunsamaClient(context.session);
     const result = await sunsamaClient.updateTaskStream(
       taskId,
       streamId,
