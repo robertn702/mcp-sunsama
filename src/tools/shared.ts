@@ -1,5 +1,68 @@
 import { toTsv } from "../utils/to-tsv.js";
+import { getClient } from "../utils/client-resolver.js";
 
+/**
+ * Tool context interface for withTransportClient pattern
+ */
+export interface ToolContext {
+  session?: any;
+  client?: any;
+  [key: string]: any;
+}
+
+/**
+ * Tool configuration interface
+ */
+export interface ToolConfig {
+  name: string;
+  description: string;
+  parameters: any;
+  execute: (args: any, context: ToolContext) => Promise<any>;
+}
+
+/**
+ * Higher-order function that enhances a tool with transport-aware client injection.
+ * Automatically provides the correct SunsamaClient based on the transport type:
+ * - stdio: Uses global authenticated client
+ * - HTTP: Uses per-request authenticated client from session
+ */
+export function withTransportClient(toolConfig: ToolConfig) {
+  return {
+    name: toolConfig.name,
+    description: toolConfig.description,
+    parameters: toolConfig.parameters,
+    execute: async (args: any, extra: any = {}) => {
+      try {
+        // Auto-resolve client based on transport
+        const client = await getClient(extra.session);
+
+        // Execute tool with injected client
+        const context: ToolContext = { ...extra, client };
+        const result = await toolConfig.execute(args, context);
+
+        // Ensure MCP-compliant response format
+        if (result && Array.isArray(result.content)) {
+          return result;
+        }
+
+        // Wrap if needed
+        return {
+          content: [
+            {
+              type: "text",
+              text: typeof result === "string"
+                ? result
+                : JSON.stringify(result, null, 2)
+            }
+          ]
+        };
+      } catch (error) {
+        console.error(`Tool ${toolConfig.name} error:`, error);
+        throw error;
+      }
+    }
+  };
+}
 
 /**
  * Formats data as JSON response
