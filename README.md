@@ -48,22 +48,41 @@ cp .env.example .env
 Environment variables:
 - `SUNSAMA_EMAIL` - Your Sunsama account email (required for stdio transport)
 - `SUNSAMA_PASSWORD` - Your Sunsama account password (required for stdio transport)
-- `SUNSAMA_SESSION_TOKEN` - Alternative session token authentication (optional)
-- `PORT` - Server port for HTTP transport (default: 3002)
-- `MCP_TRANSPORT` - Transport type: `stdio` or `httpStream` (default: stdio)
+- `TRANSPORT_MODE` - Transport type: `stdio` (default) or `http`
+- `PORT` - Server port for HTTP transport (default: 8080)
+- `HTTP_ENDPOINT` - MCP endpoint path (default: `/mcp`)
 
 ## Usage
 
-### Running the Server
+### Transport Modes
 
-**Stdio Transport (default):**
+This server supports two transport modes:
+
+#### Stdio Transport (Default)
+For local AI assistants (Claude Desktop, Cursor, etc.):
 ```bash
-bun run src/main.ts
+bun run dev
+# or
+TRANSPORT_MODE=stdio bun run src/main.ts
 ```
 
-**HTTP Stream Transport:**
+#### HTTP Stream Transport
+For remote access and web-based integrations:
 ```bash
-MCP_TRANSPORT=httpStream PORT=3002 bun run src/main.ts
+TRANSPORT_MODE=http PORT=8080 bun run src/main.ts
+```
+
+**HTTP Endpoints:**
+- MCP Endpoint: `POST http://localhost:8080/mcp`
+- Health Check: `GET http://localhost:8080/`
+
+**Authentication:**
+HTTP requests require HTTP Basic Auth with your Sunsama credentials:
+```bash
+curl -X POST http://localhost:8080/mcp \
+  -H "Authorization: Basic $(echo -n 'your-email:your-password' | base64)" \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","method":"tools/list","id":1}'
 ```
 
 ### Claude Desktop Configuration
@@ -162,7 +181,7 @@ src/
 
 **Stdio Transport:** Requires `SUNSAMA_EMAIL` and `SUNSAMA_PASSWORD` environment variables.
 
-**HTTP Transport:** The Sunsama credentials are passed in the HTTP request. No environment variables needed.
+**HTTP Transport:** Credentials provided via HTTP Basic Auth per request. No environment variables needed for credentials.
 
 ## Contributing
 
