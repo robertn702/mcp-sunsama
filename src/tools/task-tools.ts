@@ -31,63 +31,62 @@ import {
 } from "../schemas.js";
 import { filterTasksByCompletion } from "../utils/task-filters.js";
 import { trimTasksForResponse } from "../utils/task-trimmer.js";
-import { getGlobalSunsamaClient } from "../auth/stdio.js";
 import {
   formatJsonResponse,
   formatPaginatedTsvResponse,
   formatTsvResponse,
+  withTransportClient,
+  type ToolContext,
 } from "./shared.js";
 
 // Task Query Tools
-export const getTasksBacklogTool = {
+export const getTasksBacklogTool = withTransportClient({
   name: "get-tasks-backlog",
   description: "Get tasks from the backlog",
   parameters: getTasksBacklogSchema,
-  execute: async (_args: GetTasksBacklogInput) => {
-    const sunsamaClient = await getGlobalSunsamaClient();
-    const tasks = await sunsamaClient.getTasksBacklog();
+  execute: async (_args: GetTasksBacklogInput, context: ToolContext) => {
+    const tasks = await context.client.getTasksBacklog();
     const trimmedTasks = trimTasksForResponse(tasks);
 
     return formatTsvResponse(trimmedTasks);
   },
-};
+});
 
-export const getTasksByDayTool = {
+export const getTasksByDayTool = withTransportClient({
   name: "get-tasks-by-day",
   description:
     "Get tasks for a specific day with optional filtering by completion status",
   parameters: getTasksByDaySchema,
   execute: async (
     { day, timezone, completionFilter = "all" }: GetTasksByDayInput,
+    context: ToolContext,
   ) => {
-    const sunsamaClient = await getGlobalSunsamaClient();
-
     // If no timezone provided, get the user's default timezone
     let resolvedTimezone = timezone;
     if (!resolvedTimezone) {
-      resolvedTimezone = await sunsamaClient.getUserTimezone();
+      resolvedTimezone = await context.client.getUserTimezone();
     }
 
-    const tasks = await sunsamaClient.getTasksByDay(day, resolvedTimezone);
+    const tasks = await context.client.getTasksByDay(day, resolvedTimezone);
     const filteredTasks = filterTasksByCompletion(tasks, completionFilter);
     const trimmedTasks = trimTasksForResponse(filteredTasks);
 
     return formatTsvResponse(trimmedTasks);
   },
-};
+});
 
-export const getArchivedTasksTool = {
+export const getArchivedTasksTool = withTransportClient({
   name: "get-archived-tasks",
   description: "Get archived tasks with optional pagination",
   parameters: getArchivedTasksSchema,
   execute: async (
     { offset = 0, limit = 100 }: GetArchivedTasksInput,
+    context: ToolContext,
   ) => {
     const requestedLimit = limit;
     const fetchLimit = requestedLimit + 1;
 
-    const sunsamaClient = await getGlobalSunsamaClient();
-    const allTasks = await sunsamaClient.getArchivedTasks(offset, fetchLimit);
+    const allTasks = await context.client.getArchivedTasks(offset, fetchLimit);
 
     const hasMore = allTasks.length > requestedLimit;
     const tasks = hasMore ? allTasks.slice(0, requestedLimit) : allTasks;
@@ -103,22 +102,21 @@ export const getArchivedTasksTool = {
 
     return formatPaginatedTsvResponse(trimmedTasks, paginationInfo);
   },
-};
+});
 
-export const getTaskByIdTool = {
+export const getTaskByIdTool = withTransportClient({
   name: "get-task-by-id",
   description: "Get a specific task by its ID",
   parameters: getTaskByIdSchema,
-  execute: async ({ taskId }: GetTaskByIdInput) => {
-    const sunsamaClient = await getGlobalSunsamaClient();
-    const task = await sunsamaClient.getTaskById(taskId) || null;
+  execute: async ({ taskId }: GetTaskByIdInput, context: ToolContext) => {
+    const task = await context.client.getTaskById(taskId) || null;
 
     return formatJsonResponse(task);
   },
-};
+});
 
 // Task Lifecycle Tools
-export const createTaskTool = {
+export const createTaskTool = withTransportClient({
   name: "create-task",
   description: "Create a new task with optional properties",
   parameters: createTaskSchema,
@@ -133,9 +131,8 @@ export const createTaskTool = {
       private: isPrivate,
       taskId,
     }: CreateTaskInput,
+    context: ToolContext,
   ) => {
-    const sunsamaClient = await getGlobalSunsamaClient();
-
     const options: CreateTaskOptions = {};
     if (notes) options.notes = notes;
     if (streamIds) options.streamIds = streamIds;
@@ -145,7 +142,7 @@ export const createTaskTool = {
     if (isPrivate !== undefined) options.private = isPrivate;
     if (taskId) options.taskId = taskId;
 
-    const result = await sunsamaClient.createTask(text, options);
+    const result = await context.client.createTask(text, options);
 
     return formatJsonResponse({
       success: result.success,
@@ -155,17 +152,17 @@ export const createTaskTool = {
       updatedFields: result.updatedFields,
     });
   },
-};
+});
 
-export const deleteTaskTool = {
+export const deleteTaskTool = withTransportClient({
   name: "delete-task",
   description: "Delete a task permanently",
   parameters: deleteTaskSchema,
   execute: async (
     { taskId, limitResponsePayload, wasTaskMerged }: DeleteTaskInput,
+    context: ToolContext,
   ) => {
-    const sunsamaClient = await getGlobalSunsamaClient();
-    const result = await sunsamaClient.deleteTask(
+    const result = await context.client.deleteTask(
       taskId,
       limitResponsePayload,
       wasTaskMerged,
@@ -178,18 +175,18 @@ export const deleteTaskTool = {
       updatedFields: result.updatedFields,
     });
   },
-};
+});
 
 // Task Update Tools
-export const updateTaskCompleteTool = {
+export const updateTaskCompleteTool = withTransportClient({
   name: "update-task-complete",
   description: "Mark a task as complete with optional completion timestamp",
   parameters: updateTaskCompleteSchema,
   execute: async (
     { taskId, completeOn, limitResponsePayload }: UpdateTaskCompleteInput,
+    context: ToolContext,
   ) => {
-    const sunsamaClient = await getGlobalSunsamaClient();
-    const result = await sunsamaClient.updateTaskComplete(
+    const result = await context.client.updateTaskComplete(
       taskId,
       completeOn,
       limitResponsePayload,
@@ -202,9 +199,9 @@ export const updateTaskCompleteTool = {
       updatedFields: result.updatedFields,
     });
   },
-};
+});
 
-export const updateTaskSnoozeDateTool = {
+export const updateTaskSnoozeDateTool = withTransportClient({
   name: "update-task-snooze-date",
   description:
     "Update task snooze date to reschedule tasks or move them to backlog",
@@ -212,16 +209,15 @@ export const updateTaskSnoozeDateTool = {
   execute: async (
     { taskId, newDay, timezone, limitResponsePayload }:
       UpdateTaskSnoozeDateInput,
+    context: ToolContext,
   ) => {
-    const sunsamaClient = await getGlobalSunsamaClient();
-
     const options: { timezone?: string; limitResponsePayload?: boolean } = {};
     if (timezone) options.timezone = timezone;
     if (limitResponsePayload !== undefined) {
       options.limitResponsePayload = limitResponsePayload;
     }
 
-    const result = await sunsamaClient.updateTaskSnoozeDate(
+    const result = await context.client.updateTaskSnoozeDate(
       taskId,
       newDay,
       options,
@@ -234,24 +230,23 @@ export const updateTaskSnoozeDateTool = {
       updatedFields: result.updatedFields,
     });
   },
-};
+});
 
-export const updateTaskBacklogTool = {
+export const updateTaskBacklogTool = withTransportClient({
   name: "update-task-backlog",
   description: "Move a task to the backlog",
   parameters: updateTaskBacklogSchema,
   execute: async (
     { taskId, timezone, limitResponsePayload }: UpdateTaskBacklogInput,
+    context: ToolContext,
   ) => {
-    const sunsamaClient = await getGlobalSunsamaClient();
-
     const options: { timezone?: string; limitResponsePayload?: boolean } = {};
     if (timezone) options.timezone = timezone;
     if (limitResponsePayload !== undefined) {
       options.limitResponsePayload = limitResponsePayload;
     }
 
-    const result = await sunsamaClient.updateTaskSnoozeDate(
+    const result = await context.client.updateTaskSnoozeDate(
       taskId,
       null,
       options,
@@ -264,18 +259,18 @@ export const updateTaskBacklogTool = {
       updatedFields: result.updatedFields,
     });
   },
-};
+});
 
-export const updateTaskPlannedTimeTool = {
+export const updateTaskPlannedTimeTool = withTransportClient({
   name: "update-task-planned-time",
   description: "Update the planned time (time estimate) for a task",
   parameters: updateTaskPlannedTimeSchema,
   execute: async (
     { taskId, timeEstimateMinutes, limitResponsePayload }:
       UpdateTaskPlannedTimeInput,
+    context: ToolContext,
   ) => {
-    const sunsamaClient = await getGlobalSunsamaClient();
-    const result = await sunsamaClient.updateTaskPlannedTime(
+    const result = await context.client.updateTaskPlannedTime(
       taskId,
       timeEstimateMinutes,
       limitResponsePayload,
@@ -288,20 +283,19 @@ export const updateTaskPlannedTimeTool = {
       updatedFields: result.updatedFields,
     });
   },
-};
+});
 
-export const updateTaskNotesTool = {
+export const updateTaskNotesTool = withTransportClient({
   name: "update-task-notes",
   description: "Update the notes content for a task",
   parameters: updateTaskNotesSchema,
   execute: async (
     { taskId, html, markdown, limitResponsePayload }: UpdateTaskNotesInput,
+    context: ToolContext,
   ) => {
     const content = html
       ? { type: "html" as const, value: html }
       : { type: "markdown" as const, value: markdown! };
-
-    const sunsamaClient = await getGlobalSunsamaClient();
 
     const options: { limitResponsePayload?: boolean } = {};
     if (limitResponsePayload !== undefined) {
@@ -311,7 +305,7 @@ export const updateTaskNotesTool = {
     const apiContent = content.type === "html"
       ? { html: content.value }
       : { markdown: content.value };
-    const result = await sunsamaClient.updateTaskNotes(
+    const result = await context.client.updateTaskNotes(
       taskId,
       apiContent,
       options,
@@ -324,17 +318,17 @@ export const updateTaskNotesTool = {
       updatedFields: result.updatedFields,
     });
   },
-};
+});
 
-export const updateTaskDueDateTool = {
+export const updateTaskDueDateTool = withTransportClient({
   name: "update-task-due-date",
   description: "Update the due date for a task",
   parameters: updateTaskDueDateSchema,
   execute: async (
     { taskId, dueDate, limitResponsePayload }: UpdateTaskDueDateInput,
+    context: ToolContext,
   ) => {
-    const sunsamaClient = await getGlobalSunsamaClient();
-    const result = await sunsamaClient.updateTaskDueDate(
+    const result = await context.client.updateTaskDueDate(
       taskId,
       dueDate,
       limitResponsePayload,
@@ -348,18 +342,17 @@ export const updateTaskDueDateTool = {
       updatedFields: result.updatedFields,
     });
   },
-};
+});
 
-export const updateTaskTextTool = {
+export const updateTaskTextTool = withTransportClient({
   name: "update-task-text",
   description: "Update the text/title of a task",
   parameters: updateTaskTextSchema,
   execute: async (
     { taskId, text, recommendedStreamId, limitResponsePayload }:
       UpdateTaskTextInput,
+    context: ToolContext,
   ) => {
-    const sunsamaClient = await getGlobalSunsamaClient();
-
     const options: {
       recommendedStreamId?: string | null;
       limitResponsePayload?: boolean;
@@ -371,7 +364,7 @@ export const updateTaskTextTool = {
       options.limitResponsePayload = limitResponsePayload;
     }
 
-    const result = await sunsamaClient.updateTaskText(taskId, text, options);
+    const result = await context.client.updateTaskText(taskId, text, options);
 
     return formatJsonResponse({
       success: result.success,
@@ -381,17 +374,17 @@ export const updateTaskTextTool = {
       updatedFields: result.updatedFields,
     });
   },
-};
+});
 
-export const updateTaskStreamTool = {
+export const updateTaskStreamTool = withTransportClient({
   name: "update-task-stream",
   description: "Update the stream/channel assignment for a task",
   parameters: updateTaskStreamSchema,
   execute: async (
     { taskId, streamId, limitResponsePayload }: UpdateTaskStreamInput,
+    context: ToolContext,
   ) => {
-    const sunsamaClient = await getGlobalSunsamaClient();
-    const result = await sunsamaClient.updateTaskStream(
+    const result = await context.client.updateTaskStream(
       taskId,
       streamId,
       limitResponsePayload !== undefined ? limitResponsePayload : true,
@@ -405,7 +398,7 @@ export const updateTaskStreamTool = {
       updatedFields: result.updatedFields,
     });
   },
-};
+});
 
 // Export all task tools
 export const taskTools = [
