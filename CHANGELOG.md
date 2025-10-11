@@ -1,5 +1,11 @@
 # mcp-sunsama
 
+## 0.15.2
+
+### Patch Changes
+
+- 6128d4c: Fix Node.js v20 compatibility by using sunsama-api subpath exports. Updates all imports to use explicit subpath exports ('sunsama-api/client' and 'sunsama-api/types') instead of root import, resolving ESM/CommonJS interoperability issues.
+
 ## 0.15.1
 
 ### Patch Changes
