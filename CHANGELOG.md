@@ -1,5 +1,19 @@
 # mcp-sunsama
 
+## 0.15.0
+
+### Minor Changes
+
+- f2a39f2: Add HTTP transport support with session management and comprehensive test suite
+
+  - Implement HTTP Stream transport alongside existing stdio transport
+  - Add dual-layer session caching (client cache + session manager)
+  - Implement TTL-based session management with configurable timeouts
+  - Add comprehensive unit test suite (251 tests)
+  - Add integration test suite for authenticated flows
+  - Reorganize tests into standard **tests** directory structure
+  - Add TypeScript types for better type safety in tests
+
 ## 0.14.1
 
 ### Patch Changes
