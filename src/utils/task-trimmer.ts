@@ -1,4 +1,4 @@
-import type { Task, TaskIntegration } from "sunsama-api";
+import type { Task, TaskIntegration } from "sunsama-api/types";
 
 /**
  * Trimmed task type containing only essential properties for API responses.

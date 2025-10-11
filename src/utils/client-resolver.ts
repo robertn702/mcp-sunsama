@@ -1,4 +1,4 @@
-import { SunsamaClient } from "sunsama-api";
+import { SunsamaClient } from "sunsama-api/client";
 import { getGlobalSunsamaClient } from "../auth/stdio.js";
 import type { SessionData } from "../auth/types.js";
 import { sessionManager } from "../transports/http.js";

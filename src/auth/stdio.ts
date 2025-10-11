@@ -1,4 +1,4 @@
-import { SunsamaClient } from "sunsama-api";
+import { SunsamaClient } from "sunsama-api/client";
 
 /**
  * Cached authentication promise to prevent concurrent auth attempts

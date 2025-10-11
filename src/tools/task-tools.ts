@@ -1,4 +1,4 @@
-import type { CreateTaskOptions } from "sunsama-api";
+import type { CreateTaskOptions } from "sunsama-api/types";
 import {
   type CreateTaskInput,
   createTaskSchema,

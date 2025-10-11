@@ -1,4 +1,4 @@
-import { SunsamaClient } from "sunsama-api";
+import { SunsamaClient } from "sunsama-api/client";
 
 /**
  * Session data interface for HTTP transport
