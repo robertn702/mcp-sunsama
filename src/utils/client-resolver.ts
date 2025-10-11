@@ -1,7 +1,7 @@
 import { SunsamaClient } from "sunsama-api";
 import { getGlobalSunsamaClient } from "../auth/stdio.js";
 import type { SessionData } from "../auth/types.js";
-import { httpSessionDataMap } from "../transports/http.js";
+import { sessionManager } from "../transports/http.js";
 
 /**
  * Gets the appropriate SunsamaClient instance based on context
@@ -14,10 +14,12 @@ export async function getClient(session?: any): Promise<SunsamaClient> {
     return session.sunsamaClient;
   }
 
-  // Check if session has an ID we can use to lookup in HTTP session map
-  if (session?.id && httpSessionDataMap.has(session.id)) {
-    const sessionData = httpSessionDataMap.get(session.id) as SessionData;
-    return sessionData.sunsamaClient;
+  // Check if session has an ID we can use to lookup in SessionManager
+  if (session?.id) {
+    const sessionData = sessionManager.getSessionData(session.id);
+    if (sessionData) {
+      return sessionData.sunsamaClient;
+    }
   }
 
   // Fallback to stdio transport: global client
