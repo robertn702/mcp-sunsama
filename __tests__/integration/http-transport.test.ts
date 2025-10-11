@@ -1,4 +1,10 @@
 import { describe, test, expect, beforeAll, afterAll } from "bun:test";
+import type {
+  JSONRPCResponse,
+  JSONRPCError,
+  ListToolsResult,
+  CallToolResult
+} from "@modelcontextprotocol/sdk/types.js";
 
 /**
  * Integration Tests for HTTP Transport
@@ -9,6 +15,14 @@ import { describe, test, expect, beforeAll, afterAll } from "bun:test";
  * Run these tests locally with: bun test:integration
  * They should NOT run in CI/CD pipelines.
  */
+
+// Server info type (not provided by MCP SDK)
+interface ServerInfo {
+  name: string;
+  transport: string;
+  version: string;
+  activeSessions: number;
+}
 
 const SUNSAMA_EMAIL = process.env.SUNSAMA_EMAIL;
 const SUNSAMA_PASSWORD = process.env.SUNSAMA_PASSWORD;
@@ -22,8 +36,22 @@ function createAuthHeader(email: string, password: string): string {
   return `Basic ${Buffer.from(`${email}:${password}`).toString("base64")}`;
 }
 
-// Helper to make MCP requests
-async function mcpRequest(method: string, params: any = {}, auth?: string) {
+// Type-safe response interface for tests
+interface McpError {
+  code: number;
+  message: string;
+  data?: unknown;
+}
+
+interface McpResponse {
+  jsonrpc: "2.0";
+  id: number | string;
+  result?: any;
+  error?: McpError;
+}
+
+// Helper to make MCP requests with properly typed responses
+async function mcpRequest(method: string, params: any = {}, auth?: string): Promise<McpResponse> {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     "Accept": "application/json, text/event-stream",
@@ -44,7 +72,7 @@ async function mcpRequest(method: string, params: any = {}, auth?: string) {
     }),
   });
 
-  return response.json();
+  return response.json() as Promise<McpResponse>;
 }
 
 describe.skipIf(!shouldRunIntegrationTests)("HTTP Transport Integration Tests", () => {
@@ -64,7 +92,7 @@ describe.skipIf(!shouldRunIntegrationTests)("HTTP Transport Integration Tests", 
   describe("Server Health", () => {
     test("should return server info", async () => {
       const response = await fetch(`${BASE_URL}/`);
-      const data = await response.json();
+      const data = await response.json() as ServerInfo;
 
       expect(response.status).toBe(200);
       expect(data.name).toBe("mcp-sunsama");
@@ -90,15 +118,15 @@ describe.skipIf(!shouldRunIntegrationTests)("HTTP Transport Integration Tests", 
       const result = await mcpRequest("tools/list", {}, auth);
 
       expect(result.error).toBeDefined();
-      expect(result.error.code).toBe(-32000);
-      expect(result.error.message).toContain("Authentication failed");
+      expect(result.error!.code).toBe(-32000);
+      expect(result.error!.message).toContain("Authentication failed");
     });
 
     test("should reject missing authorization", async () => {
       const result = await mcpRequest("tools/list", {});
 
       expect(result.error).toBeDefined();
-      expect(result.error.code).toBe(-32000);
+      expect(result.error!.code).toBe(-32000);
     });
   });
 
