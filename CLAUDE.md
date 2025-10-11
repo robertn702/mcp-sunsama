@@ -36,7 +36,7 @@ This server supports two transport modes with different authentication strategie
 - Session-isolated SunsamaClient instances
 - Credentials provided in Authorization header
 
-Transport selection via `TRANSPORT_TYPE` environment variable ("stdio" | "httpStream").
+Transport selection via `TRANSPORT_MODE` environment variable ("stdio" | "http").
 
 ### Client Resolution Pattern
 `utils/client-resolver.ts` abstracts transport differences:
@@ -170,7 +170,7 @@ Required for stdio transport:
 - `SUNSAMA_PASSWORD`: Sunsama account password
 
 Optional:
-- `TRANSPORT_TYPE`: "stdio" (default) | "httpStream"
+- `TRANSPORT_MODE`: "stdio" (default) | "http"
 - `PORT`: Server port (default: 3002, HTTP transport only)
 
 ### Task Operations
