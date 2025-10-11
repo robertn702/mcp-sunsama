@@ -19,6 +19,7 @@
     "typecheck": "bunx tsc --noEmit",
     "typecheck:watch": "bunx tsc --noEmit --watch",
     "build": "bunx tsc",
+    "postbuild": "chmod +x dist/main.js",
     "inspect": "bunx @modelcontextprotocol/inspector --config ./mcp-inspector.json --server sunsama",
     "changeset": "changeset",
     "version": "changeset version",
