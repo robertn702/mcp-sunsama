@@ -1,5 +1,5 @@
 import { describe, test, expect } from "bun:test";
-import { parseBasicAuth } from "./http.js";
+import { parseBasicAuth } from "../../../src/auth/http.js";
 import { createHash } from "crypto";
 
 describe("HTTP Authentication", () => {

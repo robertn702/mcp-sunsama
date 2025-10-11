@@ -1,6 +1,6 @@
 import { describe, test, expect, beforeEach, jest } from "bun:test";
-import { SessionManager } from "./session-manager.js";
-import type { SessionData } from "../auth/types.js";
+import { SessionManager } from "../../../src/session/session-manager.js";
+import type { SessionData } from "../../../src/auth/types.js";
 import type { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 
 describe("SessionManager", () => {
