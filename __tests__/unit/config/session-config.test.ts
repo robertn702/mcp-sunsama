@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeEach } from "bun:test";
-import { getSessionConfig } from "./session-config.js";
+import { getSessionConfig } from "../../../src/config/session-config.js";
 
 describe("Session Configuration", () => {
   const originalEnv = process.env;
