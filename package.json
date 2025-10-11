@@ -18,13 +18,15 @@
     "test:watch": "bun test --watch --test-name-pattern '^(?!.*Integration Tests).*$'",
     "typecheck": "bunx tsc --noEmit",
     "typecheck:watch": "bunx tsc --noEmit --watch",
+    "clean": "rm -rf dist",
     "build": "bunx tsc",
+    "build:clean": "bun run clean && bun run build",
     "postbuild": "chmod +x dist/main.js",
     "inspect": "bunx @modelcontextprotocol/inspector --config ./mcp-inspector.json --server sunsama",
     "changeset": "changeset",
     "version": "changeset version",
     "release": "bun run build && changeset publish",
-    "prepublishOnly": "bun run build"
+    "prepublishOnly": "bun run build:clean"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.18.2",
