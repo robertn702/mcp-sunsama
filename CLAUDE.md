@@ -11,9 +11,16 @@ bun run typecheck          # TypeScript type checking
 bun run typecheck:watch    # Watch mode type checking
 bun run inspect            # MCP Inspector for debugging
 
+# Testing
+bun test                   # Run unit tests only
+bun test:unit              # Run unit tests only (alias)
+bun test:integration       # Run integration tests (requires credentials)
+bun test:all               # Run all tests
+bun test:watch             # Watch mode for unit tests
+
 # Build and Distribution
 bun run build              # Compile TypeScript to dist/
-bun test                   # Run test suite
+bun run prepublishOnly     # Run build before publish
 
 # Version Management (Changeset)
 bun run changeset          # Create new changeset
@@ -37,6 +44,20 @@ This server supports two transport modes with different authentication strategie
 - Credentials provided in Authorization header
 
 Transport selection via `TRANSPORT_MODE` environment variable ("stdio" | "http").
+
+### Session Management Architecture
+For HTTP transport, the server implements dual-layer session caching:
+
+**Client Cache Layer** (`utils/client-resolver.ts`):
+- In-memory Map caching authenticated SunsamaClient instances
+- SHA-256 hashed credential keys for security
+- Automatic cache invalidation on authentication failure
+
+**Session Manager Layer** (`session/session-manager.ts`):
+- Manages session lifecycle with configurable TTL
+- Tracks session metadata (createdAt, lastAccessedAt)
+- Automatic cleanup of expired sessions
+- Transport reference management for proper cleanup
 
 ### Client Resolution Pattern
 `utils/client-resolver.ts` abstracts transport differences:
@@ -134,11 +155,32 @@ src/
 ├── resources/
 │   └── index.ts           # API documentation resource
 ├── auth/                  # Authentication strategies per transport type
+│   ├── stdio.ts           # Stdio transport authentication
+│   ├── http.ts            # HTTP Basic Auth parsing
+│   └── types.ts           # Shared auth types
+├── transports/
+│   ├── stdio.ts           # Stdio transport implementation
+│   └── http.ts            # HTTP Stream transport with session management
+├── session/
+│   └── session-manager.ts # Session lifecycle management
 ├── config/                # Environment configuration and validation
-├── utils/                 # Reusable utilities (client resolution, filtering, formatting)
+│   ├── transport.ts       # Transport mode configuration
+│   └── session-config.ts  # Session TTL configuration
+├── utils/                 # Reusable utilities
+│   ├── client-resolver.ts # Transport-agnostic client resolution
+│   ├── task-filters.ts    # Task completion filtering
+│   ├── task-trimmer.ts    # Response size optimization
+│   └── to-tsv.ts          # TSV formatting utilities
 ├── schemas.ts             # Zod validation schemas for all tools
-├── schemas.test.ts        # Comprehensive test suite for all Zod schemas
 └── main.ts                # Streamlined server setup (47 lines vs 1162 before)
+
+__tests__/
+├── unit/                  # Unit tests (251+ tests, no auth required)
+│   ├── auth/              # Auth utility tests
+│   ├── config/            # Configuration tests
+│   └── session/           # Session management tests
+└── integration/           # Integration tests (requires credentials)
+    └── http-transport.test.ts
 ```
 
 ### Tool Architecture Improvements
@@ -159,6 +201,29 @@ src/
 - **Zod Schema Integration**: Full TypeScript inference from Zod schemas
 - **Eliminated `any` Types**: All parameters properly typed with generated types
 
+## Testing Architecture
+
+### Test Organization
+Tests are organized in the `__tests__/` directory following standard conventions:
+
+**Unit Tests** (`__tests__/unit/`):
+- Run without authentication requirements
+- Test individual components in isolation
+- Fast execution for TDD workflow
+- Run with `bun test` or `bun test:unit`
+
+**Integration Tests** (`__tests__/integration/`):
+- Require real Sunsama credentials
+- Test full HTTP transport flow
+- Validate session management
+- Run with `bun test:integration`
+
+### Test Patterns
+- Use Bun's built-in test runner with pattern matching
+- TypeScript types from MCP SDK for type-safe testing
+- Generic helper functions for request/response handling
+- Mock transports for unit testing session management
+
 ## Important Notes
 
 ### Version Synchronization
@@ -172,6 +237,9 @@ Required for stdio transport:
 Optional:
 - `TRANSPORT_MODE`: "stdio" (default) | "http"
 - `PORT`: Server port (default: 3002, HTTP transport only)
+- `SESSION_TTL`: Session timeout in milliseconds (default: 3600000 / 1 hour)
+- `CLIENT_IDLE_TIMEOUT`: Client idle timeout in milliseconds (default: 900000 / 15 minutes)
+- `MAX_SESSIONS`: Maximum concurrent sessions for HTTP transport (default: 100)
 
 ### Task Operations
 Full CRUD support:

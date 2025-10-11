@@ -51,6 +51,9 @@ Environment variables:
 - `TRANSPORT_MODE` - Transport type: `stdio` (default) or `http`
 - `PORT` - Server port for HTTP transport (default: 8080)
 - `HTTP_ENDPOINT` - MCP endpoint path (default: `/mcp`)
+- `SESSION_TTL` - Session timeout in milliseconds (default: 3600000 / 1 hour)
+- `CLIENT_IDLE_TIMEOUT` - Client idle timeout in milliseconds (default: 900000 / 15 minutes)
+- `MAX_SESSIONS` - Maximum concurrent sessions for HTTP transport (default: 100)
 
 ## Usage
 
@@ -140,6 +143,15 @@ bun run inspect
 
 Then connect the MCP Inspector to test the tools interactively.
 
+### Testing
+```bash
+bun test                   # Run unit tests only
+bun test:unit              # Run unit tests only (alias)
+bun test:integration       # Run integration tests (requires credentials)
+bun test:all               # Run all tests
+bun test:watch             # Watch mode for unit tests
+```
+
 ### Build and Type Checking
 ```bash
 bun run build              # Compile TypeScript to dist/
@@ -165,9 +177,32 @@ src/
 ├── resources/
 │   └── index.ts           # API documentation resource
 ├── auth/                  # Authentication strategies
+│   ├── stdio.ts           # Stdio transport authentication
+│   ├── http.ts            # HTTP Basic Auth parsing
+│   └── types.ts           # Shared auth types
+├── transports/
+│   ├── stdio.ts           # Stdio transport implementation
+│   └── http.ts            # HTTP Stream transport with session management
+├── session/
+│   └── session-manager.ts # Session lifecycle management
 ├── config/                # Environment configuration
+│   ├── transport.ts       # Transport mode configuration
+│   └── session-config.ts  # Session TTL configuration
 ├── utils/                 # Utilities (filtering, trimming, etc.)
+│   ├── client-resolver.ts # Transport-agnostic client resolution
+│   ├── task-filters.ts    # Task completion filtering
+│   ├── task-trimmer.ts    # Response size optimization
+│   └── to-tsv.ts          # TSV formatting utilities
+├── schemas.ts             # Zod validation schemas
 └── main.ts                # Server setup (47 lines vs 1162 before refactoring)
+
+__tests__/
+├── unit/                  # Unit tests (no auth required)
+│   ├── auth/              # Auth utility tests
+│   ├── config/            # Configuration tests
+│   └── session/           # Session management tests
+└── integration/           # Integration tests (requires credentials)
+    └── http-transport.test.ts
 ```
 
 **Key Features:**
@@ -176,6 +211,8 @@ src/
 - **Shared Utilities**: Common patterns extracted to reduce duplication
 - **Error Handling**: Standardized error handling across all tools
 - **Response Optimization**: Task filtering and trimming for large datasets
+- **Session Management**: Dual-layer caching with TTL-based lifecycle management
+- **Test Coverage**: 251+ unit tests and comprehensive integration tests
 
 ## Authentication
 
