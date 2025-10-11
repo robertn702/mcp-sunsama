@@ -11,8 +11,11 @@
   },
   "scripts": {
     "dev": "bun --env-file=.env ./src/main.ts --verbose",
-    "test": "bun test",
-    "test:watch": "bun test --watch",
+    "test": "bun test --test-name-pattern '^(?!.*Integration Tests).*$'",
+    "test:unit": "bun test --test-name-pattern '^(?!.*Integration Tests).*$'",
+    "test:integration": "bun test --test-name-pattern 'Integration Tests'",
+    "test:all": "bun test",
+    "test:watch": "bun test --watch --test-name-pattern '^(?!.*Integration Tests).*$'",
     "typecheck": "bunx tsc --noEmit",
     "typecheck:watch": "bunx tsc --noEmit --watch",
     "build": "bunx tsc",
