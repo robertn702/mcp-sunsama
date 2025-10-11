@@ -1,5 +1,11 @@
 # mcp-sunsama
 
+## 0.15.1
+
+### Patch Changes
+
+- 8924946: Bump sunsama-api to version 0.11.2
+
 ## 0.15.0
 
 ### Minor Changes
