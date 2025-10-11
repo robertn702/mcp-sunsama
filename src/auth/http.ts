@@ -21,9 +21,16 @@ const CLEANUP_INTERVAL = sessionConfig.CLEANUP_INTERVAL;
 export function parseBasicAuth(authHeader: string): { email: string; password: string } {
   const base64Credentials = authHeader.replace('Basic ', '');
   const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
-  const [email, password] = credentials.split(':');
+  const colonIndex = credentials.indexOf(':');
 
-  if (!email || !password) {
+  if (colonIndex === -1) {
+    throw new Error("Invalid Basic Auth format");
+  }
+
+  const email = credentials.substring(0, colonIndex);
+  const password = credentials.substring(colonIndex + 1);
+
+  if (!email || password === undefined) {
     throw new Error("Invalid Basic Auth format");
   }
 
