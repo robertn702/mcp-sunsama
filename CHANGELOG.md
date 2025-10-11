@@ -1,5 +1,11 @@
 # mcp-sunsama
 
+## 0.15.3
+
+### Patch Changes
+
+- b9cd204: Fix TypeScript build output by excluding **tests** from compilation. Version 0.15.2 broke because TypeScript was compiling both src/ and **tests**/ directories, causing files to be output to dist/src/ instead of dist/. Now excludes **tests** so production code builds directly to dist/.
+
 ## 0.15.2
 
 ### Patch Changes

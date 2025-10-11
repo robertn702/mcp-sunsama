@@ -10,7 +10,7 @@ import { apiDocumentationResource } from "./resources/index.js";
 (async () => {
   const server = new McpServer({
     name: "Sunsama API Server",
-    version: "0.15.2",
+    version: "0.15.3",
     instructions: `
 This MCP server provides access to the Sunsama API for task and project management.
 
