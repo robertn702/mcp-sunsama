@@ -1,5 +1,5 @@
 import { createHash } from "crypto";
-import { SunsamaClient } from "sunsama-api";
+import { SunsamaClient } from "sunsama-api/client";
 import type { SessionData } from "./types.js";
 import { getSessionConfig } from "../config/session-config.js";
 

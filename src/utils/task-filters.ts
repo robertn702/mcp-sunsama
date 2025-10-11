@@ -1,4 +1,4 @@
-import type { Task } from "sunsama-api";
+import type { Task } from "sunsama-api/types";
 import type { CompletionFilter } from "../schemas.js";
 
 /**
