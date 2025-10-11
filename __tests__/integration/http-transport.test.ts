@@ -43,15 +43,15 @@ interface McpError {
   data?: unknown;
 }
 
-interface McpResponse {
+interface McpResponse<T = any> {
   jsonrpc: "2.0";
   id: number | string;
-  result?: any;
+  result?: T;
   error?: McpError;
 }
 
 // Helper to make MCP requests with properly typed responses
-async function mcpRequest(method: string, params: any = {}, auth?: string): Promise<McpResponse> {
+async function mcpRequest<T = any>(method: string, params: Record<string, unknown> = {}, auth?: string): Promise<McpResponse<T>> {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     "Accept": "application/json, text/event-stream",
@@ -72,7 +72,7 @@ async function mcpRequest(method: string, params: any = {}, auth?: string): Prom
     }),
   });
 
-  return response.json() as Promise<McpResponse>;
+  return response.json() as Promise<McpResponse<T>>;
 }
 
 describe.skipIf(!shouldRunIntegrationTests)("HTTP Transport Integration Tests", () => {
