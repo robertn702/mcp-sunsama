@@ -152,7 +152,7 @@ Uses HTTP Basic Auth headers (per-request authentication):
 - \`SUNSAMA_PASSWORD\`: Sunsama account password
 
 ### Optional Configuration
-- \`TRANSPORT_TYPE\`: "stdio" (default) | "httpStream" 
+- \`TRANSPORT_MODE\`: "stdio" (default) | "http"
 - \`PORT\`: Server port for HTTP transport (default: 3002)
 
 ## Error Handling

@@ -25,7 +25,7 @@ COPY package.json ./
 RUN bun install --production --frozen-lockfile
 
 # Set environment defaults for containerized deployment
-ENV TRANSPORT_TYPE=httpStream
+ENV TRANSPORT_MODE=http
 ENV PORT=3000
 
 # Expose HTTP port
