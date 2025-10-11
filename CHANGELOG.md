@@ -1,5 +1,11 @@
 # mcp-sunsama
 
+## 0.15.4
+
+### Patch Changes
+
+- eb40ca5: Fix executable permissions on bin file by adding postbuild script. Adds chmod +x to ensure dist/main.js is executable after build, resolving 'Permission denied' error when running via npx.
+
 ## 0.15.3
 
 ### Patch Changes
