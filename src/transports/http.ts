@@ -1,20 +1,20 @@
-import express from "express";
-import cors from "cors";
-import { randomUUID } from "node:crypto";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
+import cors from "cors";
+import express from "express";
+import { randomUUID } from "node:crypto";
 import {
   authenticateHttpRequest,
+  cleanupAllClients,
   startClientCacheCleanup,
   stopClientCacheCleanup,
-  cleanupAllClients,
 } from "../auth/http.js";
-import type { TransportConfig } from "../config/transport.js";
 import type { SessionData } from "../auth/types.js";
-import { SessionManager } from "../session/session-manager.js";
 import { getSessionConfig } from "../config/session-config.js";
-import packageJson from "../../package.json" assert { type: "json" };
+import type { TransportConfig } from "../config/transport.js";
+import { PACKAGE_NAME, VERSION } from "../constants.js";
+import { SessionManager } from "../session/session-manager.js";
 
 // Unified session management
 export const sessionManager = new SessionManager();
@@ -70,13 +70,13 @@ export async function setupHttpTransport(
     })
   );
 
-  app.use(express.json({ limit: "4mb" }));
+  app.use(express.json({limit: "4mb"}));
 
   // Health check endpoint
   app.get("/", (req, res) => {
     res.json({
-      name: packageJson.name,
-      version: packageJson.version,
+      name: PACKAGE_NAME,
+      version: VERSION,
       transport: "http",
       activeSessions: sessionManager.getSessionCount(),
     });
@@ -249,7 +249,7 @@ export async function setupHttpTransport(
     }
   });
 
-  const { port } = config.httpStream;
+  const {port} = config.httpStream;
 
   // Start cleanup timers
   startClientCacheCleanup();
