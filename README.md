@@ -2,6 +2,10 @@
 
 A Model Context Protocol (MCP) server that provides comprehensive task management capabilities through the Sunsama API. This server enables AI assistants to access Sunsama tasks, create new tasks, mark tasks complete, and manage your productivity workflow.
 
+<a href="https://glama.ai/mcp/servers/@robertn702/mcp-sunsama">
+  <img width="380" height="200" src="https://glama.ai/mcp/servers/@robertn702/mcp-sunsama/badge" />
+</a>
+
 ## Features
 
 ### Task Management
