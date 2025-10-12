@@ -167,7 +167,10 @@ This project uses [changesets](https://github.com/changesets/changesets) for ver
    bun run version       # Apply changesets and update package.json
    ```
 
-   **Note**: Version synchronization is automatic. The MCP server imports its version from `package.json` at runtime, so no manual updates are needed.
+   **IMPORTANT**: After this command, manually update the version in `src/constants.ts` to match `package.json`:
+   ```typescript
+   export const VERSION = "X.Y.Z";  // <-- Update to match package.json
+   ```
 
 3. **Pre-Release Validation**
    ```bash
@@ -205,7 +208,11 @@ This project uses [changesets](https://github.com/changesets/changesets) for ver
 
 #### Version Synchronization
 
-The MCP server version is automatically synchronized with `package.json`. The server imports the version at runtime using TypeScript's JSON module imports (`import packageJson from "../package.json"`), ensuring the version is always accurate without manual synchronization.
+**IMPORTANT**: When updating the version, you must update it in TWO places:
+1. `package.json` - The npm package version
+2. `src/constants.ts` - The `VERSION` constant
+
+This ensures the MCP server reports the correct version to clients during the handshake.
 
 #### Troubleshooting Releases
 
