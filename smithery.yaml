@@ -1,0 +1,9 @@
+runtime: "container"
+startCommand:
+  type: "http"
+build:
+  dockerfile: "Dockerfile"
+  dockerBuildPath: "."
+env:
+  TRANSPORT_MODE: "http"
+  PORT: "3000"

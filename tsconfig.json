@@ -12,6 +12,7 @@
     "moduleResolution": "bundler",
     "verbatimModuleSyntax": true,
     "noEmit": false,
+    "resolveJsonModule": true,
 
     // Build output configuration
     "outDir": "dist",

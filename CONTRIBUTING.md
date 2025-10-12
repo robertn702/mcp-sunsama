@@ -55,11 +55,23 @@ Example: `feat/add-task-labels`
    bun run build
    ```
 
-5. Create a changeset for your changes:
+5. Create a changeset for your changes (if needed):
    ```bash
    bun run changeset
    ```
    Follow the prompts to describe your changes.
+
+   **When to create a changeset:**
+   - ✅ New user-facing features or tools
+   - ✅ Bug fixes that affect npm package users
+   - ✅ API changes or breaking changes
+   - ✅ Dependency updates that change behavior
+
+   **When NOT to create a changeset:**
+   - ❌ Infrastructure/deployment changes (CI/CD, Docker, Smithery config)
+   - ❌ Internal refactoring with no behavior changes
+   - ❌ Documentation updates
+   - ❌ Development tooling changes
 
 6. Commit your changes using conventional commit format:
    ```bash
@@ -155,12 +167,7 @@ This project uses [changesets](https://github.com/changesets/changesets) for ver
    bun run version       # Apply changesets and update package.json
    ```
 
-   **IMPORTANT**: After running this command, manually update the MCP server version in `src/main.ts` (line ~19) to match the new version in `package.json`:
-   ```typescript
-   const server = new FastMCP({
-     name: "Sunsama API Server",
-     version: "X.Y.Z",  // <-- Update this to match package.json
-   ```
+   **Note**: Version synchronization is automatic. The MCP server imports its version from `package.json` at runtime, so no manual updates are needed.
 
 3. **Pre-Release Validation**
    ```bash
@@ -177,7 +184,6 @@ This project uses [changesets](https://github.com/changesets/changesets) for ver
    Verify the commit includes:
    - `package.json` - version bump
    - `CHANGELOG.md` - generated changelog
-   - `src/main.ts` - MCP server version update
    - Removed changeset files from `.changeset/`
 
 5. **Publish to NPM**
@@ -199,7 +205,7 @@ This project uses [changesets](https://github.com/changesets/changesets) for ver
 
 #### Version Synchronization
 
-The MCP server version in `src/main.ts` must always match the version in `package.json`. This ensures clients receive accurate version information during the MCP handshake.
+The MCP server version is automatically synchronized with `package.json`. The server imports the version at runtime using TypeScript's JSON module imports (`import packageJson from "../package.json"`), ensuring the version is always accurate without manual synchronization.
 
 #### Troubleshooting Releases
 

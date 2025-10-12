@@ -14,6 +14,7 @@ import type { TransportConfig } from "../config/transport.js";
 import type { SessionData } from "../auth/types.js";
 import { SessionManager } from "../session/session-manager.js";
 import { getSessionConfig } from "../config/session-config.js";
+import packageJson from "../../package.json" assert { type: "json" };
 
 // Unified session management
 export const sessionManager = new SessionManager();
@@ -74,8 +75,8 @@ export async function setupHttpTransport(
   // Health check endpoint
   app.get("/", (req, res) => {
     res.json({
-      name: "mcp-sunsama",
-      version: "0.15.0",
+      name: packageJson.name,
+      version: packageJson.version,
       transport: "http",
       activeSessions: sessionManager.getSessionCount(),
     });
