@@ -5,12 +5,13 @@ import { setupStdioTransport } from "./transports/stdio.js";
 import { setupHttpTransport } from "./transports/http.js";
 import { allTools } from "./tools/index.js";
 import { apiDocumentationResource } from "./resources/index.js";
+import packageJson from "../package.json" assert { type: "json" };
 
 // Async IIFE for top-level await and error handling
 (async () => {
   const server = new McpServer({
     name: "Sunsama API Server",
-    version: "0.15.4",
+    version: packageJson.version,
     instructions: `
 This MCP server provides access to the Sunsama API for task and project management.
 
