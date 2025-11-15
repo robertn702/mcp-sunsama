@@ -89,6 +89,14 @@ All tools use Zod schemas from `schemas.ts`:
 - Union types for completion filters
 - XOR schema patterns for mutually exclusive parameters using `.refine()` for MCP Inspector compatibility
 - Example: `update-task-notes` requires either `html` OR `markdown`, but not both
+- Discriminated unions for task integrations (GitHub, Gmail)
+
+### Integration Support
+The `create-task` tool supports external integrations:
+- **GitHub Integration**: Link tasks to GitHub issues or pull requests
+- **Gmail Integration**: Link tasks to Gmail emails
+- Uses discriminated union pattern for type-safe integration handling
+- Integration parameter is optional to maintain backward compatibility
 
 ## Key Patterns
 
@@ -149,7 +157,7 @@ src/
 ├── tools/
 │   ├── shared.ts          # Common utilities and tool wrapper patterns
 │   ├── user-tools.ts      # User operations (get-user)
-│   ├── task-tools.ts      # Task operations (14 tools)
+│   ├── task-tools.ts      # Task operations (15 tools)
 │   ├── stream-tools.ts    # Stream operations (get-streams)
 │   └── index.ts           # Export all tools
 ├── resources/
@@ -193,7 +201,7 @@ __tests__/
 
 **Resource-Based Organization**:
 - **User Tools**: Single tool for user operations
-- **Task Tools**: 14 tools organized by function (query, lifecycle, update)
+- **Task Tools**: 15 tools organized by function (query, lifecycle, update)
 - **Stream Tools**: Single tool for stream operations
 
 **Type Safety Improvements**:
@@ -244,7 +252,7 @@ Optional:
 ### Task Operations
 Full CRUD support:
 - **Read**: `get-tasks-by-day`, `get-tasks-backlog`, `get-archived-tasks`, `get-task-by-id`, `get-streams`
-- **Write**: `create-task`, `update-task-complete`, `update-task-planned-time`, `update-task-notes`, `update-task-snooze-date`, `update-task-backlog`, `update-task-stream`, `delete-task`
+- **Write**: `create-task` (with GitHub/Gmail integration support), `update-task-complete`, `update-task-planned-time`, `update-task-notes`, `update-task-snooze-date`, `update-task-backlog`, `update-task-stream`, `update-task-text`, `update-task-due-date`, `delete-task`
 
 Task read operations support response trimming. `get-tasks-by-day` includes completion filtering. `get-archived-tasks` includes enhanced pagination with hasMore flag for LLM decision-making.
 

@@ -9,7 +9,7 @@ A Model Context Protocol (MCP) server that provides comprehensive task managemen
 ## Features
 
 ### Task Management
-- **Create Tasks** - Create new tasks with notes, time estimates, due dates, and stream assignments
+- **Create Tasks** - Create new tasks with notes, time estimates, due dates, stream assignments, and GitHub/Gmail integrations
 - **Read Tasks** - Get tasks by day with completion filtering, access backlog tasks, retrieve archived task history
 - **Update Tasks** - Mark tasks as complete with custom timestamps, reschedule tasks or move to backlog
 - **Delete Tasks** - Permanently remove tasks from your workspace
@@ -114,7 +114,7 @@ Add this configuration to your Claude Desktop MCP settings:
 ## API Tools
 
 ### Task Management
-- `create-task` - Create new tasks with optional properties
+- `create-task` - Create new tasks with optional properties including GitHub issue/PR and Gmail integration
 - `get-tasks-by-day` - Get tasks for a specific day with completion filtering
 - `get-tasks-backlog` - Get backlog tasks
 - `get-archived-tasks` - Get archived tasks with pagination (includes hasMore flag for LLM context)
@@ -132,6 +132,74 @@ Add this configuration to your Claude Desktop MCP settings:
 ### User & Stream Operations
 - `get-user` - Get current user information
 - `get-streams` - Get streams/channels for project organization
+
+### Integration Examples
+
+The `create-task` tool supports linking tasks to external services like GitHub and Gmail.
+
+#### GitHub Integration
+
+Link a task to a GitHub issue:
+```json
+{
+  "text": "Fix authentication bug",
+  "integration": {
+    "service": "github",
+    "identifier": {
+      "id": "I_kwDOO4SCuM7VTB4n",
+      "repositoryOwnerLogin": "robertn702",
+      "repositoryName": "mcp-sunsama",
+      "number": 42,
+      "type": "Issue",
+      "url": "https://github.com/robertn702/mcp-sunsama/issues/42",
+      "__typename": "TaskGithubIntegrationIdentifier"
+    },
+    "__typename": "TaskGithubIntegration"
+  }
+}
+```
+
+Link a task to a GitHub pull request:
+```json
+{
+  "text": "Review API refactoring PR",
+  "integration": {
+    "service": "github",
+    "identifier": {
+      "id": "PR_kwDOO4SCuM7VTB5o",
+      "repositoryOwnerLogin": "robertn702",
+      "repositoryName": "mcp-sunsama",
+      "number": 15,
+      "type": "PullRequest",
+      "url": "https://github.com/robertn702/mcp-sunsama/pull/15",
+      "__typename": "TaskGithubIntegrationIdentifier"
+    },
+    "__typename": "TaskGithubIntegration"
+  }
+}
+```
+
+#### Gmail Integration
+
+Link a task to a Gmail email:
+```json
+{
+  "text": "Respond to project update email",
+  "integration": {
+    "service": "gmail",
+    "identifier": {
+      "id": "19a830b40fd7ab7d",
+      "messageId": "19a830b40fd7ab7d",
+      "accountId": "user@example.com",
+      "url": "https://mail.google.com/mail/u/user@example.com/#inbox/19a830b40fd7ab7d",
+      "__typename": "TaskGmailIntegrationIdentifier"
+    },
+    "__typename": "TaskGmailIntegration"
+  }
+}
+```
+
+**Note**: All integration parameters are optional. Tasks can be created without integrations for standard task management.
 
 ## Development
 
@@ -175,7 +243,7 @@ src/
 ├── tools/
 │   ├── shared.ts          # Common utilities and patterns
 │   ├── user-tools.ts      # User operations (get-user)
-│   ├── task-tools.ts      # Task operations (14 tools)
+│   ├── task-tools.ts      # Task operations (15 tools)
 │   ├── stream-tools.ts    # Stream operations (get-streams)
 │   └── index.ts           # Export all tools
 ├── resources/

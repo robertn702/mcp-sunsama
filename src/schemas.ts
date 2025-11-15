@@ -60,6 +60,50 @@ export const getUserSchema = z.object({});
 export const getStreamsSchema = z.object({});
 
 /**
+ * Task Integration Schemas
+ */
+
+// GitHub integration identifier schema
+const githubIntegrationIdentifierSchema = z.object({
+  id: z.string().describe("GitHub issue or PR ID"),
+  repositoryOwnerLogin: z.string().describe("GitHub repository owner login"),
+  repositoryName: z.string().describe("GitHub repository name"),
+  number: z.number().int().describe("GitHub issue or PR number"),
+  type: z.enum(["Issue", "PullRequest"]).describe("Type of GitHub item"),
+  url: z.string().url().describe("URL to the GitHub issue or PR"),
+  __typename: z.literal("TaskGithubIntegrationIdentifier"),
+});
+
+// GitHub integration schema
+const githubIntegrationSchema = z.object({
+  service: z.literal("github"),
+  identifier: githubIntegrationIdentifierSchema,
+  __typename: z.literal("TaskGithubIntegration"),
+});
+
+// Gmail integration identifier schema
+const gmailIntegrationIdentifierSchema = z.object({
+  id: z.string().describe("Gmail message ID"),
+  messageId: z.string().describe("Gmail message ID (duplicate of id)"),
+  accountId: z.string().describe("Gmail account ID"),
+  url: z.string().url().describe("URL to the Gmail message"),
+  __typename: z.literal("TaskGmailIntegrationIdentifier"),
+});
+
+// Gmail integration schema
+const gmailIntegrationSchema = z.object({
+  service: z.literal("gmail"),
+  identifier: gmailIntegrationIdentifierSchema,
+  __typename: z.literal("TaskGmailIntegration"),
+});
+
+// Union schema for all task integrations
+const taskIntegrationSchema = z.discriminatedUnion("service", [
+  githubIntegrationSchema,
+  gmailIntegrationSchema,
+]);
+
+/**
  * Task Mutation Operation Schemas
  */
 
@@ -82,6 +126,9 @@ export const createTaskSchema = z.object({
   private: z.boolean().optional().describe("Whether the task is private"),
   taskId: z.string().optional().describe(
     "Custom task ID (auto-generated if not provided)",
+  ),
+  integration: taskIntegrationSchema.optional().describe(
+    "Integration information for linking task to external services (GitHub, Gmail, etc.)",
   ),
 });
 

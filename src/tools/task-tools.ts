@@ -130,6 +130,7 @@ export const createTaskTool = withTransportClient({
       snoozeUntil,
       private: isPrivate,
       taskId,
+      integration,
     }: CreateTaskInput,
     context: ToolContext,
   ) => {
@@ -141,6 +142,7 @@ export const createTaskTool = withTransportClient({
     if (snoozeUntil) options.snoozeUntil = snoozeUntil;
     if (isPrivate !== undefined) options.private = isPrivate;
     if (taskId) options.taskId = taskId;
+    if (integration) options.integration = integration;
 
     const result = await context.client.createTask(text, options);
 
