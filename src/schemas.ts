@@ -200,7 +200,9 @@ export const updateTaskPlannedTimeSchema = z.object({
   ),
 });
 
-// Update task notes parameters with XOR content validation
+// Update task notes parameters
+// Note: XOR validation between html/markdown is done in the tool execute function
+// to keep the schema as a plain ZodObject (required for MCP SDK compatibility)
 export const updateTaskNotesSchema = z.object({
   taskId: z.string().min(1, "Task ID is required").describe(
     "The ID of the task to update notes for",
@@ -214,18 +216,7 @@ export const updateTaskNotesSchema = z.object({
   limitResponsePayload: z.boolean().optional().describe(
     "Whether to limit the response payload size (defaults to true)",
   ),
-}).refine(
-  (data) => {
-    // Exactly one of html or markdown must be provided
-    const hasHtml = data.html !== undefined;
-    const hasMarkdown = data.markdown !== undefined;
-    return hasHtml !== hasMarkdown; // XOR: exactly one must be true
-  },
-  {
-    message: "Exactly one of 'html' or 'markdown' must be provided",
-    path: [], // This will show the error at the root level
-  },
-);
+});
 
 // Update task due date parameters
 export const updateTaskDueDateSchema = z.object({
