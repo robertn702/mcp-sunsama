@@ -28,6 +28,31 @@ bun run version            # Apply changesets and update version
 bun run release            # Build and publish to npm
 ```
 
+## Contribution Workflow
+
+**IMPORTANT**: When making changes that affect package users, always create a changeset.
+
+### When to Create a Changeset
+- ✅ New user-facing features or tools
+- ✅ Bug fixes that affect npm package users
+- ✅ API changes or breaking changes
+- ✅ Dependency updates that change behavior
+
+### When NOT to Create a Changeset
+- ❌ Infrastructure/deployment changes (CI/CD, Docker, Smithery config)
+- ❌ Internal refactoring with no behavior changes
+- ❌ Documentation updates
+- ❌ Development tooling changes
+
+### Standard Workflow
+1. Create a branch: `git checkout -b {type}/{short-name}`
+2. Make changes and test: `bun test && bun run typecheck`
+3. **Create a changeset**: `bun run changeset` (if changes affect users)
+4. Commit with conventional format: `git commit -m "fix: description"`
+5. Push and create PR
+
+See `CONTRIBUTING.md` for full details.
+
 ## Architecture Overview
 
 ### Dual Transport MCP Server
@@ -87,8 +112,8 @@ All tools use Zod schemas from `schemas.ts`:
 - Automatic TypeScript inference
 - Comprehensive parameter documentation
 - Union types for completion filters
-- XOR schema patterns for mutually exclusive parameters using `.refine()` for MCP Inspector compatibility
-- Example: `update-task-notes` requires either `html` OR `markdown`, but not both
+- **Important**: Avoid using `.refine()` on schemas - it transforms `ZodObject` into `ZodEffects` which the MCP SDK cannot parse (results in empty `properties`). Handle complex validation (e.g., XOR between fields) in the tool's `execute` function instead.
+- Example: `update-task-notes` requires either `html` OR `markdown`, validated at runtime
 - Discriminated unions for task integrations (GitHub, Gmail)
 
 ### Integration Support
