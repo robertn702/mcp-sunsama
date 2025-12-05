@@ -295,6 +295,13 @@ export const updateTaskNotesTool = withTransportClient({
     { taskId, html, markdown, limitResponsePayload }: UpdateTaskNotesInput,
     context: ToolContext,
   ) => {
+    // XOR validation: exactly one of html or markdown must be provided
+    const hasHtml = html !== undefined;
+    const hasMarkdown = markdown !== undefined;
+    if (hasHtml === hasMarkdown) {
+      throw new Error("Exactly one of 'html' or 'markdown' must be provided");
+    }
+
     const content = html
       ? { type: "html" as const, value: html }
       : { type: "markdown" as const, value: markdown! };
