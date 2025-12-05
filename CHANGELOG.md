@@ -1,5 +1,12 @@
 # mcp-sunsama
 
+## 0.16.1
+
+### Patch Changes
+
+- 5df00f4: Bump sunsama-api dependency from 0.12.0 to 0.12.1
+- 14c0713: Fix update-task-notes tool failing with MCP error -32603. Removed Zod `.refine()` from schema which was causing MCP SDK to fail parsing the tool parameters. XOR validation between html/markdown is now handled at runtime.
+
 ## 0.16.0
 
 ### Minor Changes
