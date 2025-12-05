@@ -1,7 +1,8 @@
 /**
  * Application constants
  *
- * IMPORTANT: Keep VERSION in sync with package.json version
+ * VERSION is automatically synced from package.json by scripts/sync-version.ts
+ * when running `bun run version`
  */
 
 export const VERSION = "0.16.0";

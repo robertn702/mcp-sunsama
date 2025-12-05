@@ -260,7 +260,7 @@ Tests are organized in the `__tests__/` directory following standard conventions
 ## Important Notes
 
 ### Version Synchronization
-Always keep FastMCP server version in `src/main.ts` (line 19) synchronized with `package.json` version.
+The MCP server version in `src/constants.ts` is automatically synced from `package.json` when running `bun run version`.
 
 ### Environment Variables
 Required for stdio transport:
@@ -287,12 +287,11 @@ Configure different server variants in `mcp-inspector.json` for testing various 
 
 ## Version Management
 
-**IMPORTANT**: Keep the FastMCP server version in sync with package.json version.
+Version is managed automatically via changesets. When you run `bun run version`:
+1. Changesets updates `package.json` version
+2. `scripts/sync-version.ts` automatically syncs the version to `src/constants.ts`
 
-When updating the version:
-1. Update `package.json` version (done automatically by changesets)
-2. Manually update the FastMCP server version in `src/main.ts` (line 19)
-3. Both versions must be identical for consistency
+No manual version updates needed.
 
 ## Git Rules
 
