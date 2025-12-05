@@ -24,7 +24,7 @@
     "postbuild": "chmod +x dist/main.js",
     "inspect": "bunx @modelcontextprotocol/inspector --config ./mcp-inspector.json --server sunsama",
     "changeset": "changeset",
-    "version": "changeset version",
+    "version": "changeset version && bun scripts/sync-version.ts",
     "release": "npm run build && changeset publish",
     "prepublishOnly": "npm run build:clean"
   },
@@ -34,7 +34,7 @@
     "cors": "^2.8.5",
     "express": "^5.1.0",
     "papaparse": "^5.5.3",
-    "sunsama-api": "0.12.0",
+    "sunsama-api": "0.12.1",
     "zod": "3.24.4"
   },
   "devDependencies": {
