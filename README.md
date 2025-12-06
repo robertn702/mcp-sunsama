@@ -111,6 +111,23 @@ Add this configuration to your Claude Desktop MCP settings:
 }
 ```
 
+### Claude Code Configuration
+
+Add the Sunsama MCP server using the Claude Code CLI:
+
+```bash
+claude mcp add sunsama --scope user \
+  -e SUNSAMA_EMAIL=your-email@example.com \
+  -e SUNSAMA_PASSWORD=your-password \
+  -- npx mcp-sunsama
+```
+
+**Scope Options:**
+- `--scope user` - Available across all projects (recommended)
+- `--scope project` - Only available in the current project
+
+After adding the server, restart Claude Code to connect to the Sunsama MCP server.
+
 ## API Tools
 
 ### Task Management
