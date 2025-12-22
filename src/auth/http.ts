@@ -48,6 +48,15 @@ function getCacheKey(email: string, password: string): string {
 }
 
 /**
+ * Generate secure cache key from session token
+ */
+function getTokenCacheKey(token: string): string {
+  return createHash('sha256')
+    .update(`token:${token}`)
+    .digest('hex');
+}
+
+/**
  * Check if a cached client is still valid based on TTL
  */
 function isClientValid(sessionData: SessionData): boolean {
@@ -122,22 +131,92 @@ export function cleanupAllClients(): void {
 
 /**
  * Authenticate HTTP request and get or create cached client
+ * Supports both Basic Auth (email/password) and Bearer token authentication
  * Uses secure cache key (password hash) and race condition protection
  */
 export async function authenticateHttpRequest(
   authHeader?: string
 ): Promise<SessionData> {
-  if (!authHeader || !authHeader.startsWith('Basic ')) {
-    throw new Error("Basic Auth required");
+  if (!authHeader) {
+    throw new Error("Authorization header required (Basic or Bearer)");
   }
 
-  const { email, password } = parseBasicAuth(authHeader);
-  const cacheKey = getCacheKey(email, password);
+  const isBearer = authHeader.startsWith('Bearer ');
+  const isBasic = authHeader.startsWith('Basic ');
+
+  if (!isBearer && !isBasic) {
+    throw new Error("Authorization header must be Basic or Bearer");
+  }
+
   const now = Date.now();
+  let cacheKey: string;
+  let identifier: string;
+
+  if (isBearer) {
+    const token = authHeader.replace('Bearer ', '').trim();
+    if (!token) {
+      throw new Error("Invalid Bearer token");
+    }
+    cacheKey = getTokenCacheKey(token);
+    identifier = 'token-user';
+
+    // Check for pending authentication (race condition protection)
+    if (authPromises.has(cacheKey)) {
+      console.error(`[Client Cache] Waiting for pending authentication for ${identifier}`);
+      return await authPromises.get(cacheKey)!;
+    }
+
+    // Check cache first
+    if (clientCache.has(cacheKey)) {
+      const cached = clientCache.get(cacheKey)!;
+      if (isClientValid(cached)) {
+        console.error(`[Client Cache] Reusing cached client for ${identifier}`);
+        cached.lastAccessedAt = now;
+        return cached;
+      } else {
+        console.error(`[Client Cache] Cached client expired for ${identifier}, re-authenticating`);
+        try {
+          cached.sunsamaClient.logout();
+        } catch (err) {
+          console.error(`[Client Cache] Error logging out expired client:`, err);
+        }
+        clientCache.delete(cacheKey);
+      }
+    }
+
+    // Create authentication promise for Bearer token
+    console.error(`[Client Cache] Creating new client for ${identifier}`);
+    const authPromise = (async () => {
+      try {
+        const sunsamaClient = new SunsamaClient({ sessionToken: token });
+
+        const sessionData: SessionData = {
+          sunsamaClient,
+          createdAt: now,
+          lastAccessedAt: now
+        };
+
+        clientCache.set(cacheKey, sessionData);
+        console.error(`[Client Cache] Cached new client for ${identifier} (total: ${clientCache.size})`);
+
+        return sessionData;
+      } finally {
+        authPromises.delete(cacheKey);
+      }
+    })();
+
+    authPromises.set(cacheKey, authPromise);
+    return authPromise;
+  }
+
+  // Basic Auth flow
+  const { email, password } = parseBasicAuth(authHeader);
+  cacheKey = getCacheKey(email, password);
+  identifier = email;
 
   // Check for pending authentication (race condition protection)
   if (authPromises.has(cacheKey)) {
-    console.error(`[Client Cache] Waiting for pending authentication for ${email}`);
+    console.error(`[Client Cache] Waiting for pending authentication for ${identifier}`);
     return await authPromises.get(cacheKey)!;
   }
 
@@ -147,12 +226,12 @@ export async function authenticateHttpRequest(
 
     // Check if still valid (lazy expiration)
     if (isClientValid(cached)) {
-      console.error(`[Client Cache] Reusing cached client for ${email}`);
+      console.error(`[Client Cache] Reusing cached client for ${identifier}`);
       // Update last accessed time (sliding window)
       cached.lastAccessedAt = now;
       return cached;
     } else {
-      console.error(`[Client Cache] Cached client expired for ${email}, re-authenticating`);
+      console.error(`[Client Cache] Cached client expired for ${identifier}, re-authenticating`);
       // Cleanup expired client
       try {
         cached.sunsamaClient.logout();
@@ -164,7 +243,7 @@ export async function authenticateHttpRequest(
   }
 
   // Create authentication promise to prevent concurrent authentications
-  console.error(`[Client Cache] Creating new client for ${email}`);
+  console.error(`[Client Cache] Creating new client for ${identifier}`);
   const authPromise = (async () => {
     try {
       const sunsamaClient = new SunsamaClient();
@@ -178,7 +257,7 @@ export async function authenticateHttpRequest(
       };
 
       clientCache.set(cacheKey, sessionData);
-      console.error(`[Client Cache] Cached new client for ${email} (total: ${clientCache.size})`);
+      console.error(`[Client Cache] Cached new client for ${identifier} (total: ${clientCache.size})`);
 
       return sessionData;
     } finally {
