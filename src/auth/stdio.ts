@@ -7,12 +7,22 @@ let authenticationPromise: Promise<SunsamaClient> | null = null;
 
 /**
  * Initialize stdio authentication using environment variables
+ * Supports session token (SUNSAMA_SESSION_TOKEN) or email/password (SUNSAMA_EMAIL, SUNSAMA_PASSWORD)
  * @throws {Error} If credentials are missing or authentication fails
  */
 export async function initializeStdioAuth(): Promise<SunsamaClient> {
+  // Prefer session token if available (useful for Google SSO users)
+  if (process.env.SUNSAMA_SESSION_TOKEN) {
+    const sunsamaClient = new SunsamaClient({
+      sessionToken: process.env.SUNSAMA_SESSION_TOKEN
+    });
+    return sunsamaClient;
+  }
+
+  // Fall back to email/password authentication
   if (!process.env.SUNSAMA_EMAIL || !process.env.SUNSAMA_PASSWORD) {
     throw new Error(
-      "Sunsama credentials not configured. Please set SUNSAMA_EMAIL and SUNSAMA_PASSWORD environment variables."
+      "Sunsama credentials not configured. Please set SUNSAMA_SESSION_TOKEN or both SUNSAMA_EMAIL and SUNSAMA_PASSWORD environment variables."
     );
   }
 

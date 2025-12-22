@@ -5,7 +5,7 @@ import { SunsamaClient } from "sunsama-api/client";
  */
 export interface SessionData extends Record<string, unknown> {
   sunsamaClient: SunsamaClient;
-  email: string;
+  email?: string;
   createdAt: number;
   lastAccessedAt: number;
 }
