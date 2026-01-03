@@ -61,7 +61,7 @@ export function trimTaskForResponse(task: Task): TrimmedTask {
   // Integration identifiers vary by service - some have URLs (websites), others have different properties
   if (task.integration) {
     integration = { service: task.integration.service };
-    if ("url" in task.integration.identifier) {
+    if (task.integration.identifier && "url" in task.integration.identifier) {
       integration.url = task.integration.identifier.url;
     }
   }
