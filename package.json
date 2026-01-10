@@ -1,6 +1,6 @@
 {
   "name": "mcp-sunsama",
-  "version": "0.16.1",
+  "version": "0.17.0",
   "description": "MCP server for Sunsama API integration",
   "type": "module",
   "private": false,

@@ -1,5 +1,22 @@
 # mcp-sunsama
 
+## 0.17.0
+
+### Minor Changes
+
+- 26000bd: Add subtask management support
+
+  - Update sunsama-api dependency to 0.13.1
+  - Add 5 new subtask management tools:
+    - `add-subtask` - Create a subtask with a title in one call (recommended)
+    - `create-subtasks` - Create multiple subtasks for a task (bulk operations)
+    - `update-subtask-title` - Update the title of a subtask
+    - `complete-subtask` - Mark a subtask as complete
+    - `uncomplete-subtask` - Mark a subtask as incomplete
+  - Update README and CLAUDE.md documentation
+
+- e3336cf: Add session token authentication support for users with SSO/OAuth login. Users can now authenticate using `SUNSAMA_SESSION_TOKEN` environment variable (stdio) or Bearer token authentication (HTTP) as an alternative to email/password credentials.
+
 ## 0.16.1
 
 ### Patch Changes
