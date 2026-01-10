@@ -1,5 +1,11 @@
 import type { CreateTaskOptions } from "sunsama-api/types";
 import {
+  type AddSubtaskInput,
+  addSubtaskSchema,
+  type CompleteSubtaskInput,
+  completeSubtaskSchema,
+  type CreateSubtasksInput,
+  createSubtasksSchema,
   type CreateTaskInput,
   createTaskSchema,
   type DeleteTaskInput,
@@ -12,6 +18,10 @@ import {
   getTasksBacklogSchema,
   type GetTasksByDayInput,
   getTasksByDaySchema,
+  type UncompleteSubtaskInput,
+  uncompleteSubtaskSchema,
+  type UpdateSubtaskTitleInput,
+  updateSubtaskTitleSchema,
   type UpdateTaskBacklogInput,
   updateTaskBacklogSchema,
   type UpdateTaskCompleteInput,
@@ -409,6 +419,128 @@ export const updateTaskStreamTool = withTransportClient({
   },
 });
 
+// Subtask Management Tools
+export const createSubtasksTool = withTransportClient({
+  name: "create-subtasks",
+  description: "Create multiple subtasks for a task (low-level API for bulk operations)",
+  parameters: createSubtasksSchema,
+  execute: async (
+    { taskId, subtaskIds, limitResponsePayload }: CreateSubtasksInput,
+    context: ToolContext,
+  ) => {
+    const result = await context.client.createSubtasks(
+      taskId,
+      subtaskIds,
+      limitResponsePayload,
+    );
+
+    return formatJsonResponse({
+      success: result.success,
+      taskId,
+      subtaskIds,
+      subtasksCreated: true,
+      count: subtaskIds.length,
+      updatedFields: result.updatedFields,
+    });
+  },
+});
+
+export const updateSubtaskTitleTool = withTransportClient({
+  name: "update-subtask-title",
+  description: "Update the title of a subtask",
+  parameters: updateSubtaskTitleSchema,
+  execute: async (
+    { taskId, subtaskId, title }: UpdateSubtaskTitleInput,
+    context: ToolContext,
+  ) => {
+    const result = await context.client.updateSubtaskTitle(
+      taskId,
+      subtaskId,
+      title,
+    );
+
+    return formatJsonResponse({
+      success: result.success,
+      taskId,
+      subtaskId,
+      title,
+      subtaskTitleUpdated: true,
+      updatedFields: result.updatedFields,
+    });
+  },
+});
+
+export const completeSubtaskTool = withTransportClient({
+  name: "complete-subtask",
+  description: "Mark a subtask as complete with optional completion timestamp",
+  parameters: completeSubtaskSchema,
+  execute: async (
+    { taskId, subtaskId, completedDate, limitResponsePayload }: CompleteSubtaskInput,
+    context: ToolContext,
+  ) => {
+    const result = await context.client.completeSubtask(
+      taskId,
+      subtaskId,
+      completedDate,
+      limitResponsePayload,
+    );
+
+    return formatJsonResponse({
+      success: result.success,
+      taskId,
+      subtaskId,
+      subtaskCompleted: true,
+      completedDate: completedDate || new Date().toISOString(),
+      updatedFields: result.updatedFields,
+    });
+  },
+});
+
+export const uncompleteSubtaskTool = withTransportClient({
+  name: "uncomplete-subtask",
+  description: "Mark a subtask as incomplete (uncomplete it)",
+  parameters: uncompleteSubtaskSchema,
+  execute: async (
+    { taskId, subtaskId, limitResponsePayload }: UncompleteSubtaskInput,
+    context: ToolContext,
+  ) => {
+    const result = await context.client.uncompleteSubtask(
+      taskId,
+      subtaskId,
+      limitResponsePayload,
+    );
+
+    return formatJsonResponse({
+      success: result.success,
+      taskId,
+      subtaskId,
+      subtaskUncompleted: true,
+      updatedFields: result.updatedFields,
+    });
+  },
+});
+
+export const addSubtaskTool = withTransportClient({
+  name: "add-subtask",
+  description: "Convenience method to create a subtask with a title in one call (recommended for single subtask creation)",
+  parameters: addSubtaskSchema,
+  execute: async (
+    { taskId, title }: AddSubtaskInput,
+    context: ToolContext,
+  ) => {
+    const result = await context.client.addSubtask(taskId, title);
+
+    return formatJsonResponse({
+      success: result.result.success,
+      taskId,
+      subtaskId: result.subtaskId,
+      title,
+      subtaskAdded: true,
+      updatedFields: result.result.updatedFields,
+    });
+  },
+});
+
 // Export all task tools
 export const taskTools = [
   // Query tools
@@ -430,4 +562,11 @@ export const taskTools = [
   updateTaskDueDateTool,
   updateTaskTextTool,
   updateTaskStreamTool,
+
+  // Subtask management tools
+  createSubtasksTool,
+  updateSubtaskTitleTool,
+  completeSubtaskTool,
+  uncompleteSubtaskTool,
+  addSubtaskTool,
 ];
