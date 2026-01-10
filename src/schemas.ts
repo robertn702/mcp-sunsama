@@ -264,6 +264,75 @@ export const updateTaskStreamSchema = z.object({
 });
 
 /**
+ * Subtask Operation Schemas
+ */
+
+// Create subtasks parameters
+export const createSubtasksSchema = z.object({
+  taskId: z.string().min(1, "Task ID is required").describe(
+    "The ID of the parent task",
+  ),
+  subtaskIds: z.array(z.string().min(1)).min(1, "At least one subtask ID is required").describe(
+    "Array of subtask IDs to create (use SunsamaClient.generateTaskId() to generate IDs)",
+  ),
+  limitResponsePayload: z.boolean().optional().describe(
+    "Whether to limit the response payload size",
+  ),
+});
+
+// Update subtask title parameters
+export const updateSubtaskTitleSchema = z.object({
+  taskId: z.string().min(1, "Task ID is required").describe(
+    "The ID of the parent task",
+  ),
+  subtaskId: z.string().min(1, "Subtask ID is required").describe(
+    "The ID of the subtask to update",
+  ),
+  title: z.string().min(1, "Subtask title is required").describe(
+    "The new title for the subtask",
+  ),
+});
+
+// Complete subtask parameters
+export const completeSubtaskSchema = z.object({
+  taskId: z.string().min(1, "Task ID is required").describe(
+    "The ID of the parent task",
+  ),
+  subtaskId: z.string().min(1, "Subtask ID is required").describe(
+    "The ID of the subtask to mark as complete",
+  ),
+  completedDate: z.string().optional().describe(
+    "Completion timestamp (ISO format). Defaults to current time",
+  ),
+  limitResponsePayload: z.boolean().optional().describe(
+    "Whether to limit the response payload size",
+  ),
+});
+
+// Uncomplete subtask parameters
+export const uncompleteSubtaskSchema = z.object({
+  taskId: z.string().min(1, "Task ID is required").describe(
+    "The ID of the parent task",
+  ),
+  subtaskId: z.string().min(1, "Subtask ID is required").describe(
+    "The ID of the subtask to mark as incomplete",
+  ),
+  limitResponsePayload: z.boolean().optional().describe(
+    "Whether to limit the response payload size",
+  ),
+});
+
+// Add subtask parameters (convenience method)
+export const addSubtaskSchema = z.object({
+  taskId: z.string().min(1, "Task ID is required").describe(
+    "The ID of the parent task",
+  ),
+  title: z.string().min(1, "Subtask title is required").describe(
+    "The title for the new subtask",
+  ),
+});
+
+/**
  * Response Type Schemas (for validation and documentation)
  */
 
@@ -374,6 +443,12 @@ export type UpdateTaskNotesInput = z.infer<typeof updateTaskNotesSchema>;
 export type UpdateTaskDueDateInput = z.infer<typeof updateTaskDueDateSchema>;
 export type UpdateTaskTextInput = z.infer<typeof updateTaskTextSchema>;
 export type UpdateTaskStreamInput = z.infer<typeof updateTaskStreamSchema>;
+
+export type CreateSubtasksInput = z.infer<typeof createSubtasksSchema>;
+export type UpdateSubtaskTitleInput = z.infer<typeof updateSubtaskTitleSchema>;
+export type CompleteSubtaskInput = z.infer<typeof completeSubtaskSchema>;
+export type UncompleteSubtaskInput = z.infer<typeof uncompleteSubtaskSchema>;
+export type AddSubtaskInput = z.infer<typeof addSubtaskSchema>;
 
 export type User = z.infer<typeof userSchema>;
 export type Task = z.infer<typeof taskSchema>;

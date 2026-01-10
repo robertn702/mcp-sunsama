@@ -182,7 +182,7 @@ src/
 ├── tools/
 │   ├── shared.ts          # Common utilities and tool wrapper patterns
 │   ├── user-tools.ts      # User operations (get-user)
-│   ├── task-tools.ts      # Task operations (15 tools)
+│   ├── task-tools.ts      # Task operations (20 tools)
 │   ├── stream-tools.ts    # Stream operations (get-streams)
 │   └── index.ts           # Export all tools
 ├── resources/
@@ -226,7 +226,7 @@ __tests__/
 
 **Resource-Based Organization**:
 - **User Tools**: Single tool for user operations
-- **Task Tools**: 15 tools organized by function (query, lifecycle, update)
+- **Task Tools**: 20 tools organized by function (query, lifecycle, update, subtasks)
 - **Stream Tools**: Single tool for stream operations
 
 **Type Safety Improvements**:
@@ -278,6 +278,7 @@ Optional:
 Full CRUD support:
 - **Read**: `get-tasks-by-day`, `get-tasks-backlog`, `get-archived-tasks`, `get-task-by-id`, `get-streams`
 - **Write**: `create-task` (with GitHub/Gmail integration support), `update-task-complete`, `update-task-planned-time`, `update-task-notes`, `update-task-snooze-date`, `update-task-backlog`, `update-task-stream`, `update-task-text`, `update-task-due-date`, `delete-task`
+- **Subtasks**: `add-subtask` (recommended), `create-subtasks` (bulk), `update-subtask-title`, `complete-subtask`, `uncomplete-subtask`
 
 Task read operations support response trimming. `get-tasks-by-day` includes completion filtering. `get-archived-tasks` includes enhanced pagination with hasMore flag for LLM decision-making.
 

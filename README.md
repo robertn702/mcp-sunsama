@@ -12,6 +12,7 @@ A Model Context Protocol (MCP) server that provides comprehensive task managemen
 - **Create Tasks** - Create new tasks with notes, time estimates, due dates, stream assignments, and GitHub/Gmail integrations
 - **Read Tasks** - Get tasks by day with completion filtering, access backlog tasks, retrieve archived task history
 - **Update Tasks** - Mark tasks as complete with custom timestamps, reschedule tasks or move to backlog
+- **Subtasks** - Add, update, complete, and manage subtasks within tasks
 - **Delete Tasks** - Permanently remove tasks from your workspace
 
 ### User & Stream Operations
@@ -145,6 +146,13 @@ After adding the server, restart Claude Code to connect to the Sunsama MCP serve
 - `update-task-snooze-date` - Reschedule tasks to different dates
 - `update-task-backlog` - Move tasks to the backlog
 - `delete-task` - Delete tasks permanently
+
+#### Subtask Management
+- `add-subtask` - Create a subtask with a title in one call (recommended for single subtask creation)
+- `create-subtasks` - Create multiple subtasks for a task (low-level API for bulk operations)
+- `update-subtask-title` - Update the title of a subtask
+- `complete-subtask` - Mark a subtask as complete with optional completion timestamp
+- `uncomplete-subtask` - Mark a subtask as incomplete
 
 ### User & Stream Operations
 - `get-user` - Get current user information

@@ -391,21 +391,23 @@ describe("Tool Parameter Schemas", () => {
       expect(() => updateTaskNotesSchema.parse(minimalMarkdownInput)).not.toThrow();
     });
 
-    test("should reject both HTML and Markdown provided", () => {
-      const invalidInput = {
+    test("should accept both HTML and Markdown provided (XOR validation is in tool execute)", () => {
+      const inputWithBoth = {
         taskId: "task-123",
         html: "<p>HTML content</p>",
         markdown: "Markdown content",
       };
-      expect(() => updateTaskNotesSchema.parse(invalidInput)).toThrow();
+      // Schema accepts both - XOR validation happens in the tool's execute function
+      expect(() => updateTaskNotesSchema.parse(inputWithBoth)).not.toThrow();
     });
 
-    test("should reject neither HTML nor Markdown provided", () => {
-      const invalidInput = {
+    test("should accept neither HTML nor Markdown provided (XOR validation is in tool execute)", () => {
+      const inputWithNeither = {
         taskId: "task-123",
         limitResponsePayload: true,
       };
-      expect(() => updateTaskNotesSchema.parse(invalidInput)).toThrow();
+      // Schema accepts neither - XOR validation happens in the tool's execute function
+      expect(() => updateTaskNotesSchema.parse(inputWithNeither)).not.toThrow();
     });
 
     test("should reject empty task ID", () => {
