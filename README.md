@@ -95,13 +95,20 @@ curl -X POST http://localhost:8080/mcp \
 
 ### Claude Desktop Configuration
 
+First run `which npx`:
+
+```
+❯ which npx
+/Users/robert/.asdf/shims/npx
+```
+
 Add this configuration to your Claude Desktop MCP settings:
 
 ```json
 {
   "mcpServers": {
     "sunsama": {
-      "command": "npx",
+      "command": "/Users/robert/.asdf/shims/npx", // use path from above command
       "args": ["mcp-sunsama"],
       "env": {
         "SUNSAMA_EMAIL": "your-email@example.com",
