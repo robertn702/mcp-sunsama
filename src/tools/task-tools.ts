@@ -26,6 +26,8 @@ import {
   updateTaskBacklogSchema,
   type UpdateTaskCompleteInput,
   updateTaskCompleteSchema,
+  type UpdateTaskUncompleteInput,
+  updateTaskUncompleteSchema,
   type UpdateTaskDueDateInput,
   updateTaskDueDateSchema,
   type UpdateTaskNotesInput,
@@ -38,6 +40,8 @@ import {
   updateTaskStreamSchema,
   type UpdateTaskTextInput,
   updateTaskTextSchema,
+  type ReorderTaskInput,
+  reorderTaskSchema,
 } from "../schemas.js";
 import { filterTasksByCompletion } from "../utils/task-filters.js";
 import { trimTasksForResponse } from "../utils/task-trimmer.js";
@@ -208,6 +212,28 @@ export const updateTaskCompleteTool = withTransportClient({
       success: result.success,
       taskId,
       completed: true,
+      updatedFields: result.updatedFields,
+    });
+  },
+});
+
+export const updateTaskUncompleteTool = withTransportClient({
+  name: "update-task-uncomplete",
+  description: "Mark a completed task as incomplete",
+  parameters: updateTaskUncompleteSchema,
+  execute: async (
+    { taskId, limitResponsePayload }: UpdateTaskUncompleteInput,
+    context: ToolContext,
+  ) => {
+    const result = await context.client.updateTaskUncomplete(
+      taskId,
+      limitResponsePayload,
+    );
+
+    return formatJsonResponse({
+      success: result.success,
+      taskId,
+      completed: false,
       updatedFields: result.updatedFields,
     });
   },
@@ -541,6 +567,34 @@ export const addSubtaskTool = withTransportClient({
   },
 });
 
+export const reorderTaskTool = withTransportClient({
+  name: "reorder-task",
+  description:
+    "Reorder a task within a day by moving it to a specific 0-based position (0 = top)",
+  parameters: reorderTaskSchema,
+  execute: async (
+    { taskId, position, day, timezone }: ReorderTaskInput,
+    context: ToolContext,
+  ) => {
+    let resolvedTimezone = timezone;
+    if (!resolvedTimezone) {
+      resolvedTimezone = await context.client.getUserTimezone();
+    }
+
+    const result = await context.client.reorderTask(taskId, position, day, {
+      timezone: resolvedTimezone,
+    });
+
+    return formatJsonResponse({
+      success: true,
+      taskId,
+      position,
+      day,
+      updatedTaskIds: result.updatedTaskIds,
+    });
+  },
+});
+
 // Export all task tools
 export const taskTools = [
   // Query tools
@@ -555,6 +609,7 @@ export const taskTools = [
 
   // Update tools
   updateTaskCompleteTool,
+  updateTaskUncompleteTool,
   updateTaskSnoozeDateTool,
   updateTaskBacklogTool,
   updateTaskPlannedTimeTool,
@@ -569,4 +624,7 @@ export const taskTools = [
   completeSubtaskTool,
   uncompleteSubtaskTool,
   addSubtaskTool,
+
+  // Scheduling tools
+  reorderTaskTool,
 ];

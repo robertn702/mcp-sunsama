@@ -233,6 +233,7 @@ __tests__/
 - **Parameter Destructuring**: Function signatures directly destructure typed parameters
 - **Zod Schema Integration**: Full TypeScript inference from Zod schemas
 - **Eliminated `any` Types**: All parameters properly typed with generated types
+- **Avoid Type Assertions**: Don't use `as` casts if possible. Never use `as unknown as X` — this bypasses all type checking. If you reach for these, stop and find a type-safe alternative (generics, type guards, schema validation, etc.)
 
 ## Testing Architecture
 

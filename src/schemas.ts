@@ -158,6 +158,16 @@ export const deleteTaskSchema = z.object({
   ),
 });
 
+// Update task uncomplete parameters
+export const updateTaskUncompleteSchema = z.object({
+  taskId: z.string().min(1, "Task ID is required").describe(
+    "The ID of the task to mark as incomplete",
+  ),
+  limitResponsePayload: z.boolean().optional().describe(
+    "Whether to limit the response payload size",
+  ),
+});
+
 // Update task snooze date parameters
 export const updateTaskSnoozeDateSchema = z.object({
   taskId: z.string().min(1, "Task ID is required").describe(
@@ -387,6 +397,76 @@ export const streamSchema = z.object({
   updatedAt: z.string(),
 });
 
+// Reorder task parameters
+export const reorderTaskSchema = z.object({
+  taskId: z.string().min(1, "Task ID is required").describe(
+    "The ID of the task to reorder",
+  ),
+  position: z.number().int().min(0).describe(
+    "Target 0-based position within the day (0 = top, 1 = second, etc.)",
+  ),
+  day: z.string().regex(
+    /^\d{4}-\d{2}-\d{2}$/,
+    "Day must be in YYYY-MM-DD format",
+  ).describe("The day to reorder within (YYYY-MM-DD format)"),
+  timezone: z.string().optional().describe(
+    "Timezone string (e.g., 'America/New_York'). If not provided, uses user's default timezone",
+  ),
+});
+
+/**
+ * Calendar Event Operation Schemas
+ */
+
+// Create calendar event parameters
+export const createCalendarEventSchema = z.object({
+  title: z.string().min(1, "Title is required").describe(
+    "Title of the calendar event",
+  ),
+  startDate: z.string().describe(
+    "Start date/time as ISO string (e.g., '2026-02-21T09:00:00.000Z')",
+  ),
+  endDate: z.string().describe(
+    "End date/time as ISO string (e.g., '2026-02-21T09:30:00.000Z')",
+  ),
+  description: z.string().optional().describe("Event description"),
+  calendarId: z.string().optional().describe(
+    "Calendar ID to schedule the event to (e.g., your email address)",
+  ),
+  service: z.enum(["google", "microsoft"]).optional().describe(
+    "Calendar service to use (defaults to 'google')",
+  ),
+  streamIds: z.array(z.string()).optional().describe(
+    "Array of stream IDs to associate with the event",
+  ),
+  visibility: z.enum(["private", "public", "default", "confidential"]).optional().describe(
+    "Event visibility (defaults to 'private')",
+  ),
+  transparency: z.enum(["opaque", "transparent"]).optional().describe(
+    "Event transparency — 'opaque' means busy, 'transparent' means free (defaults to 'opaque')",
+  ),
+  isAllDay: z.boolean().optional().describe("Whether this is an all-day event"),
+  seedTaskId: z.string().optional().describe(
+    "Existing task ID to link this calendar event to",
+  ),
+});
+
+// Update calendar event parameters
+export const updateCalendarEventSchema = z.object({
+  eventId: z.string().min(1, "Event ID is required").describe(
+    "The ID of the calendar event to update",
+  ),
+  update: z.record(z.unknown()).describe(
+    "Full CalendarEventUpdateData object containing all event fields to update (must include required fields: _id, createdBy, date, inviteeList, location, staticMapUrl, status, title, createdAt, scheduledTo, organizerCalendar, service, serviceIds, description, sequence, streamIds, lastModified, permissions, hangoutLink, googleCalendarURL, transparency, visibility, googleLocation, conferenceData, recurringEventInfo, runDate, agenda, outcomes, childTasks, visualizationPreferences, seedTask, eventType)",
+  ),
+  isInviteeStatusUpdate: z.boolean().optional().describe(
+    "Whether this is an invitee status update (defaults to false)",
+  ),
+  skipReorder: z.boolean().optional().describe(
+    "Whether to skip reordering (defaults to true)",
+  ),
+});
+
 /**
  * API Response Schemas
  */
@@ -431,6 +511,7 @@ export type GetStreamsInput = z.infer<typeof getStreamsSchema>;
 
 export type CreateTaskInput = z.infer<typeof createTaskSchema>;
 export type UpdateTaskCompleteInput = z.infer<typeof updateTaskCompleteSchema>;
+export type UpdateTaskUncompleteInput = z.infer<typeof updateTaskUncompleteSchema>;
 export type DeleteTaskInput = z.infer<typeof deleteTaskSchema>;
 export type UpdateTaskSnoozeDateInput = z.infer<
   typeof updateTaskSnoozeDateSchema
@@ -449,6 +530,10 @@ export type UpdateSubtaskTitleInput = z.infer<typeof updateSubtaskTitleSchema>;
 export type CompleteSubtaskInput = z.infer<typeof completeSubtaskSchema>;
 export type UncompleteSubtaskInput = z.infer<typeof uncompleteSubtaskSchema>;
 export type AddSubtaskInput = z.infer<typeof addSubtaskSchema>;
+
+export type ReorderTaskInput = z.infer<typeof reorderTaskSchema>;
+export type CreateCalendarEventInput = z.infer<typeof createCalendarEventSchema>;
+export type UpdateCalendarEventInput = z.infer<typeof updateCalendarEventSchema>;
 
 export type User = z.infer<typeof userSchema>;
 export type Task = z.infer<typeof taskSchema>;
