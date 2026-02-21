@@ -1,5 +1,25 @@
 # mcp-sunsama
 
+## 0.18.0
+
+### Minor Changes
+
+- f806778: Add three new tools for sunsama-api 0.14.0 endpoints:
+
+  - `reorder-task` — move a task to a specific 0-based position within a day
+  - `create-calendar-event` — create a new calendar event (with optional stream links, visibility, and task seed)
+  - `update-calendar-event` — update an existing calendar event (requires full CalendarEventUpdateData)
+
+- f806778: Add `update-task-uncomplete` tool to mark a completed task as incomplete, wrapping the previously missing `SunsamaClient.updateTaskUncomplete()` method.
+
+### Patch Changes
+
+- 846299b: Fix HTTP transport returning 401 for all errors instead of only authentication failures. Non-auth errors (transport failures, unexpected exceptions) now correctly return 500.
+- c1badc0: Fix HTTP transport tools always falling through to stdio client. The MCP SDK provides `sessionId` as a string on the `extra` object, not a nested `session` object. `client-resolver` now checks `extra.sessionId` to look up the per-request authenticated client in `SessionManager`.
+- d3f81d7: Add retry with exponential backoff for 429 rate limit errors during login. Both stdio startup auth and HTTP per-request auth now retry up to 3 times (delays: 1s, 5s, 15s) when `SunsamaAuthError` contains "429". Non-429 errors are rethrown immediately.
+- 3f0070a: Eliminate any types in shared tool infrastructure. ToolConfig is now generic over the Zod schema so tool execute functions receive properly typed args. ToolContext.client is typed as SunsamaClient and session as unknown, removing the catch-all index signature.
+- af74a9d: Update sunsama-api dependency to 0.14.0 (bug fix release — no new endpoints).
+
 ## 0.17.0
 
 ### Minor Changes
