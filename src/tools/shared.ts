@@ -74,10 +74,10 @@ export function withTransportClient<TSchema extends ZodTypeAny>(
     execute: async (args: Record<string, unknown>, extra: Record<string, unknown> = {}) => {
       try {
         // Auto-resolve client based on transport
-        const client = await getClient(extra["session"]);
+        const client = await getClient(extra);
 
         // Execute tool with injected client
-        const context: ToolContext = { client, session: extra["session"] };
+        const context: ToolContext = { client, session: extra };
 
         // Safe cast: the MCP SDK validates args against the schema before calling execute,
         // so args will match z.infer<TSchema> at runtime.
