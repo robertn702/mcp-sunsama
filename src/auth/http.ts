@@ -2,6 +2,7 @@ import { createHash } from "crypto";
 import { SunsamaClient } from "sunsama-api/client";
 import { AuthenticationError } from "./types.js";
 import type { SessionData } from "./types.js";
+import { loginWithRetry } from "./retry.js";
 import { getSessionConfig } from "../config/session-config.js";
 
 // Client cache with TTL management (keyed by credential hash for security)
@@ -249,7 +250,7 @@ export async function authenticateHttpRequest(
     try {
       const sunsamaClient = new SunsamaClient();
       try {
-        await sunsamaClient.login(email, password);
+        await loginWithRetry(sunsamaClient, email, password);
       } catch (err) {
         throw new AuthenticationError("Login failed: invalid credentials", err);
       }
