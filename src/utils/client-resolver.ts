@@ -13,9 +13,9 @@ export async function getClient(session?: unknown): Promise<SunsamaClient> {
     return session.sunsamaClient;
   }
 
-  // Check if session has an ID we can use to lookup in SessionManager
-  if (hasId(session)) {
-    const sessionData = sessionManager.getSessionData(session.id);
+  // Check for MCP SDK sessionId (HTTP transport — extra.sessionId is a string)
+  if (hasSessionId(session)) {
+    const sessionData = sessionManager.getSessionData(session.sessionId);
     if (sessionData) {
       return sessionData.sunsamaClient;
     }
@@ -33,11 +33,11 @@ function hasClient(session: unknown): session is { sunsamaClient: SunsamaClient 
   );
 }
 
-function hasId(session: unknown): session is { id: string } {
+function hasSessionId(extra: unknown): extra is { sessionId: string } {
   return (
-    typeof session === "object" &&
-    session !== null &&
-    "id" in session &&
-    typeof (session as Record<string, unknown>).id === "string"
+    typeof extra === "object" &&
+    extra !== null &&
+    "sessionId" in extra &&
+    typeof (extra as Record<string, unknown>).sessionId === "string"
   );
 }
