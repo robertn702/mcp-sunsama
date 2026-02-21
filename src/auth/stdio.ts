@@ -1,4 +1,5 @@
 import { SunsamaClient } from "sunsama-api/client";
+import { loginWithRetry } from "./retry.js";
 
 /**
  * Cached authentication promise to prevent concurrent auth attempts
@@ -27,7 +28,7 @@ export async function initializeStdioAuth(): Promise<SunsamaClient> {
   }
 
   const sunsamaClient = new SunsamaClient();
-  await sunsamaClient.login(process.env.SUNSAMA_EMAIL, process.env.SUNSAMA_PASSWORD);
+  await loginWithRetry(sunsamaClient, process.env.SUNSAMA_EMAIL, process.env.SUNSAMA_PASSWORD);
 
   return sunsamaClient;
 }
