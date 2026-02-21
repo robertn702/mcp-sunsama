@@ -10,6 +10,7 @@ import {
   startClientCacheCleanup,
   stopClientCacheCleanup,
 } from "../auth/http.js";
+import { AuthenticationError } from "../auth/types.js";
 import type { SessionData } from "../auth/types.js";
 import { getSessionConfig } from "../config/session-config.js";
 import type { TransportConfig } from "../config/transport.js";
@@ -166,14 +167,25 @@ export async function setupHttpTransport(
       console.error("[HTTP transport] Error:", error);
 
       if (!res.headersSent) {
-        res.status(401).json({
-          jsonrpc: "2.0",
-          error: {
-            code: -32000,
-            message: "Authentication failed",
-          },
-          id: null,
-        });
+        if (error instanceof AuthenticationError) {
+          res.status(401).json({
+            jsonrpc: "2.0",
+            error: {
+              code: -32000,
+              message: error.message,
+            },
+            id: null,
+          });
+        } else {
+          res.status(500).json({
+            jsonrpc: "2.0",
+            error: {
+              code: -32603,
+              message: "Internal server error",
+            },
+            id: null,
+          });
+        }
       }
     }
   });

@@ -1,5 +1,6 @@
 import { createHash } from "crypto";
 import { SunsamaClient } from "sunsama-api/client";
+import { AuthenticationError } from "./types.js";
 import type { SessionData } from "./types.js";
 import { getSessionConfig } from "../config/session-config.js";
 
@@ -24,14 +25,14 @@ export function parseBasicAuth(authHeader: string): { email: string; password: s
   const colonIndex = credentials.indexOf(':');
 
   if (colonIndex === -1) {
-    throw new Error("Invalid Basic Auth format");
+    throw new AuthenticationError("Invalid Basic Auth format");
   }
 
   const email = credentials.substring(0, colonIndex);
   const password = credentials.substring(colonIndex + 1);
 
   if (!email || password === undefined) {
-    throw new Error("Invalid Basic Auth format");
+    throw new AuthenticationError("Invalid Basic Auth format");
   }
 
   return { email, password };
@@ -138,14 +139,14 @@ export async function authenticateHttpRequest(
   authHeader?: string
 ): Promise<SessionData> {
   if (!authHeader) {
-    throw new Error("Authorization header required (Basic or Bearer)");
+    throw new AuthenticationError("Authorization header required (Basic or Bearer)");
   }
 
   const isBearer = authHeader.startsWith('Bearer ');
   const isBasic = authHeader.startsWith('Basic ');
 
   if (!isBearer && !isBasic) {
-    throw new Error("Authorization header must be Basic or Bearer");
+    throw new AuthenticationError("Authorization header must be Basic or Bearer");
   }
 
   const now = Date.now();
@@ -155,7 +156,7 @@ export async function authenticateHttpRequest(
   if (isBearer) {
     const token = authHeader.replace('Bearer ', '').trim();
     if (!token) {
-      throw new Error("Invalid Bearer token");
+      throw new AuthenticationError("Invalid Bearer token");
     }
     cacheKey = getTokenCacheKey(token);
     identifier = 'token-user';
@@ -247,7 +248,11 @@ export async function authenticateHttpRequest(
   const authPromise = (async () => {
     try {
       const sunsamaClient = new SunsamaClient();
-      await sunsamaClient.login(email, password);
+      try {
+        await sunsamaClient.login(email, password);
+      } catch (err) {
+        throw new AuthenticationError("Login failed: invalid credentials", err);
+      }
 
       const sessionData: SessionData = {
         sunsamaClient,
