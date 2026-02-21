@@ -15,7 +15,6 @@ build/
 # IDE files
 .vscode/
 .idea/
-.claude/
 .agents/
 *.swp
 *.swo
@@ -106,3 +105,7 @@ temp/
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
+
+# Claude local config
+.claude/settings.local.json
+.claude/**/*.local.md
