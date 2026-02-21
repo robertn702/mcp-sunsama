@@ -35,9 +35,7 @@ Authentication:
       tool.name,
       {
         description: tool.description,
-        inputSchema: "shape" in tool.parameters
-          ? tool.parameters.shape
-          : tool.parameters,
+        inputSchema: tool.inputSchema,
       },
       tool.execute,
     );
