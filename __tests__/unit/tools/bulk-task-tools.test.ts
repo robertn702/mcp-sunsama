@@ -93,6 +93,21 @@ describe("executeBulk", () => {
       error: "string error",
     });
   });
+
+  test("includes statusCode in error detail when present", async () => {
+    const operation = async (_taskId: string) => {
+      const err = new Error("Not Found");
+      (err as Error & { statusCode: number }).statusCode = 404;
+      throw err;
+    };
+    const result = await executeBulk(["t1"], operation);
+
+    expect(result.results[0]).toEqual({
+      taskId: "t1",
+      status: "rejected",
+      error: "[404] Not Found",
+    });
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -134,6 +149,22 @@ describe("formatBulkResponse", () => {
     const mcpResponse = formatBulkResponse(response);
     const text = mcpResponse.content[0].text;
     expect(text).toStartWith("# Summary: total=3, succeeded=3, failed=0\n");
+    expect(mcpResponse.isError).toBe(false);
+  });
+
+  test("sets isError when all tasks fail", () => {
+    const response: BulkOperationResponse = {
+      summary: { total: 2, succeeded: 0, failed: 2 },
+      results: [
+        { taskId: "t1", status: "rejected", error: "not found" },
+        { taskId: "t2", status: "rejected", error: "not found" },
+      ],
+    };
+
+    const mcpResponse = formatBulkResponse(response);
+    expect(mcpResponse.isError).toBe(true);
+    const text = mcpResponse.content[0].text;
+    expect(text).toStartWith("# Summary: total=2, succeeded=0, failed=2\n");
   });
 
   test("handles empty results", () => {
@@ -145,6 +176,7 @@ describe("formatBulkResponse", () => {
     const mcpResponse = formatBulkResponse(response);
     const text = mcpResponse.content[0].text;
     expect(text).toStartWith("# Summary: total=0, succeeded=0, failed=0\n");
+    expect(mcpResponse.isError).toBe(false);
   });
 });
 

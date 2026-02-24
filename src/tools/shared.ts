@@ -7,11 +7,9 @@ import { getClient } from "../utils/client-resolver.js";
 // Bulk operation types and utilities
 // ---------------------------------------------------------------------------
 
-export interface BulkTaskResult {
-  taskId: string;
-  status: "fulfilled" | "rejected";
-  error?: string;
-}
+export type BulkTaskResult =
+  | { taskId: string; status: "fulfilled" }
+  | { taskId: string; status: "rejected"; error: string };
 
 export interface BulkOperationResponse {
   summary: {
@@ -20,6 +18,15 @@ export interface BulkOperationResponse {
     failed: number;
   };
   results: BulkTaskResult[];
+}
+
+function extractErrorDetail(err: unknown): string {
+  if (!(err instanceof Error)) return String(err);
+  let code: unknown;
+  if ("statusCode" in err) code = err.statusCode;
+  else if ("code" in err) code = err.code;
+  const prefix = code != null ? `[${code}] ` : "";
+  return `${prefix}${err.message}`;
 }
 
 /**
@@ -32,21 +39,19 @@ export async function executeBulk(
   operation: (taskId: string) => Promise<unknown>,
 ): Promise<BulkOperationResponse> {
   const results: BulkTaskResult[] = [];
+  let succeeded = 0;
 
   for (const taskId of taskIds) {
     try {
       await operation(taskId);
-      results.push({ taskId, status: "fulfilled" as const });
+      results.push({ taskId, status: "fulfilled" });
+      succeeded++;
     } catch (err) {
-      results.push({
-        taskId,
-        status: "rejected" as const,
-        error: err instanceof Error ? err.message : String(err),
-      });
+      const error = extractErrorDetail(err);
+      console.error(`[executeBulk] Task ${taskId} failed:`, err);
+      results.push({ taskId, status: "rejected", error });
     }
   }
-
-  const succeeded = results.filter((r) => r.status === "fulfilled").length;
 
   return {
     summary: {
@@ -66,8 +71,11 @@ export function formatBulkResponse(
 ): McpResponse {
   const header = `# Summary: total=${response.summary.total}, succeeded=${response.summary.succeeded}, failed=${response.summary.failed}`;
   const tsvData = toTsv(response.results);
+  const allFailed =
+    response.summary.total > 0 && response.summary.succeeded === 0;
 
   return {
+    isError: allFailed,
     content: [
       {
         type: "text",
@@ -84,6 +92,7 @@ export function formatBulkResponse(
 export interface McpResponse {
   [key: string]: unknown;
   content: Array<{ type: "text"; text: string }>;
+  isError?: boolean;
 }
 
 /**
