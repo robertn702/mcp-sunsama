@@ -135,7 +135,7 @@ Uses HTTP Basic Auth headers (per-request authentication):
   - Returns: JSON with update result
 
 ### Bulk Task Operations
-Bulk tools accept an array of task IDs and perform the same operation on all of them using parallel execution.
+Bulk tools accept an array of task IDs and perform the same operation on all of them sequentially.
 Individual failures do not block others. Returns a summary header + per-task TSV results.
 
 - **update-task-complete-bulk**: Mark multiple tasks as complete

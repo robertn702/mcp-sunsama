@@ -20,7 +20,7 @@ import {
 export const updateTaskCompleteBulkTool = withTransportClient({
   name: "update-task-complete-bulk",
   description:
-    "Mark multiple tasks as complete in a single operation. Uses parallel execution — individual failures do not block others.",
+    "Mark multiple tasks as complete in a single operation. Individual failures do not block others.",
   parameters: updateTaskCompleteBulkSchema,
   execute: async (
     { taskIds, completeOn }: UpdateTaskCompleteBulkInput,
@@ -36,7 +36,7 @@ export const updateTaskCompleteBulkTool = withTransportClient({
 export const updateTaskUncompleteBulkTool = withTransportClient({
   name: "update-task-uncomplete-bulk",
   description:
-    "Mark multiple completed tasks as incomplete in a single operation. Uses parallel execution — individual failures do not block others.",
+    "Mark multiple completed tasks as incomplete in a single operation. Individual failures do not block others.",
   parameters: updateTaskUncompleteBulkSchema,
   execute: async (
     { taskIds }: UpdateTaskUncompleteBulkInput,
@@ -52,7 +52,7 @@ export const updateTaskUncompleteBulkTool = withTransportClient({
 export const deleteTaskBulkTool = withTransportClient({
   name: "delete-task-bulk",
   description:
-    "Delete multiple tasks permanently in a single operation. Uses parallel execution — individual failures do not block others.",
+    "Delete multiple tasks permanently in a single operation. Individual failures do not block others.",
   parameters: deleteTaskBulkSchema,
   execute: async (
     { taskIds }: DeleteTaskBulkInput,
@@ -68,7 +68,7 @@ export const deleteTaskBulkTool = withTransportClient({
 export const updateTaskSnoozeDateBulkTool = withTransportClient({
   name: "update-task-snooze-date-bulk",
   description:
-    "Reschedule multiple tasks to a specific date in a single operation. Uses parallel execution — individual failures do not block others.",
+    "Reschedule multiple tasks to a specific date in a single operation. Individual failures do not block others.",
   parameters: updateTaskSnoozeDateBulkSchema,
   execute: async (
     { taskIds, newDay, timezone }: UpdateTaskSnoozeDateBulkInput,
@@ -89,7 +89,7 @@ export const updateTaskSnoozeDateBulkTool = withTransportClient({
 export const updateTaskBacklogBulkTool = withTransportClient({
   name: "update-task-backlog-bulk",
   description:
-    "Move multiple tasks to the backlog in a single operation. Uses parallel execution — individual failures do not block others.",
+    "Move multiple tasks to the backlog in a single operation. Individual failures do not block others.",
   parameters: updateTaskBacklogBulkSchema,
   execute: async (
     { taskIds, timezone }: UpdateTaskBacklogBulkInput,

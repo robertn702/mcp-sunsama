@@ -280,6 +280,7 @@ Full CRUD support:
 - **Read**: `get-tasks-by-day`, `get-tasks-backlog`, `get-archived-tasks`, `get-task-by-id`, `get-streams`
 - **Write**: `create-task` (with GitHub/Gmail integration support), `update-task-complete`, `update-task-planned-time`, `update-task-notes`, `update-task-snooze-date`, `update-task-backlog`, `update-task-stream`, `update-task-text`, `update-task-due-date`, `delete-task`
 - **Subtasks**: `add-subtask` (recommended), `create-subtasks` (bulk), `update-subtask-title`, `complete-subtask`, `uncomplete-subtask`
+- **Bulk**: `update-task-complete-bulk`, `update-task-uncomplete-bulk`, `delete-task-bulk`, `update-task-snooze-date-bulk`, `update-task-backlog-bulk`
 
 Task read operations support response trimming. `get-tasks-by-day` includes completion filtering. `get-archived-tasks` includes enhanced pagination with hasMore flag for LLM decision-making.
 
