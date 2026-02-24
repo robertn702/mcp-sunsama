@@ -415,6 +415,53 @@ export const reorderTaskSchema = z.object({
 });
 
 /**
+ * Bulk Task Operation Schemas
+ */
+
+// Common taskIds field for all bulk operations
+const bulkTaskIds = z
+  .array(z.string().min(1))
+  .min(1, "At least one task ID is required")
+  .describe("Array of task IDs to operate on");
+
+// Bulk update task complete parameters
+export const updateTaskCompleteBulkSchema = z.object({
+  taskIds: bulkTaskIds,
+  completeOn: z.string().optional().describe(
+    "Completion timestamp (ISO format). Defaults to current time. Applied to all tasks.",
+  ),
+});
+
+// Bulk update task uncomplete parameters
+export const updateTaskUncompleteBulkSchema = z.object({
+  taskIds: bulkTaskIds,
+});
+
+// Bulk delete task parameters
+export const deleteTaskBulkSchema = z.object({
+  taskIds: bulkTaskIds,
+});
+
+// Bulk update task snooze date parameters
+export const updateTaskSnoozeDateBulkSchema = z.object({
+  taskIds: bulkTaskIds,
+  newDay: z.string().date("Must be a valid date in YYYY-MM-DD format").describe(
+    "Target date in YYYY-MM-DD format. Applied to all tasks.",
+  ),
+  timezone: z.string().optional().describe(
+    "Timezone string (e.g., 'America/New_York'). If not provided, uses user's default timezone",
+  ),
+});
+
+// Bulk update task backlog parameters
+export const updateTaskBacklogBulkSchema = z.object({
+  taskIds: bulkTaskIds,
+  timezone: z.string().optional().describe(
+    "Timezone string (e.g., 'America/New_York'). If not provided, uses user's default timezone",
+  ),
+});
+
+/**
  * Calendar Event Operation Schemas
  */
 
@@ -534,6 +581,12 @@ export type AddSubtaskInput = z.infer<typeof addSubtaskSchema>;
 export type ReorderTaskInput = z.infer<typeof reorderTaskSchema>;
 export type CreateCalendarEventInput = z.infer<typeof createCalendarEventSchema>;
 export type UpdateCalendarEventInput = z.infer<typeof updateCalendarEventSchema>;
+
+export type UpdateTaskCompleteBulkInput = z.infer<typeof updateTaskCompleteBulkSchema>;
+export type UpdateTaskUncompleteBulkInput = z.infer<typeof updateTaskUncompleteBulkSchema>;
+export type DeleteTaskBulkInput = z.infer<typeof deleteTaskBulkSchema>;
+export type UpdateTaskSnoozeDateBulkInput = z.infer<typeof updateTaskSnoozeDateBulkSchema>;
+export type UpdateTaskBacklogBulkInput = z.infer<typeof updateTaskBacklogBulkSchema>;
 
 export type User = z.infer<typeof userSchema>;
 export type Task = z.infer<typeof taskSchema>;

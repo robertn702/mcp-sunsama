@@ -3,6 +3,80 @@ import type { z, ZodTypeAny } from "zod";
 import { toTsv } from "../utils/to-tsv.js";
 import { getClient } from "../utils/client-resolver.js";
 
+// ---------------------------------------------------------------------------
+// Bulk operation types and utilities
+// ---------------------------------------------------------------------------
+
+export interface BulkTaskResult {
+  taskId: string;
+  status: "fulfilled" | "rejected";
+  error?: string;
+}
+
+export interface BulkOperationResponse {
+  summary: {
+    total: number;
+    succeeded: number;
+    failed: number;
+  };
+  results: BulkTaskResult[];
+}
+
+/**
+ * Runs an async operation for every task ID sequentially.
+ * Sequential execution avoids triggering third-party API rate limits.
+ * One failure does not block others. Returns per-task results.
+ */
+export async function executeBulk(
+  taskIds: string[],
+  operation: (taskId: string) => Promise<unknown>,
+): Promise<BulkOperationResponse> {
+  const results: BulkTaskResult[] = [];
+
+  for (const taskId of taskIds) {
+    try {
+      await operation(taskId);
+      results.push({ taskId, status: "fulfilled" as const });
+    } catch (err) {
+      results.push({
+        taskId,
+        status: "rejected" as const,
+        error: err instanceof Error ? err.message : String(err),
+      });
+    }
+  }
+
+  const succeeded = results.filter((r) => r.status === "fulfilled").length;
+
+  return {
+    summary: {
+      total: taskIds.length,
+      succeeded,
+      failed: taskIds.length - succeeded,
+    },
+    results,
+  };
+}
+
+/**
+ * Formats a bulk operation response as a summary header line + TSV of per-task results.
+ */
+export function formatBulkResponse(
+  response: BulkOperationResponse,
+): McpResponse {
+  const header = `# Summary: total=${response.summary.total}, succeeded=${response.summary.succeeded}, failed=${response.summary.failed}`;
+  const tsvData = toTsv(response.results);
+
+  return {
+    content: [
+      {
+        type: "text",
+        text: `${header}\n${tsvData}`,
+      },
+    ],
+  };
+}
+
 /**
  * MCP-compliant text response returned by all tool execute functions.
  * The index signature is required for structural compatibility with the SDK's CallToolResult.

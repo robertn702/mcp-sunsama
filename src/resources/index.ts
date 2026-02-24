@@ -134,6 +134,39 @@ Uses HTTP Basic Auth headers (per-request authentication):
     - \`limitResponsePayload\` (optional): Whether to limit response size
   - Returns: JSON with update result
 
+### Bulk Task Operations
+Bulk tools accept an array of task IDs and perform the same operation on all of them using parallel execution.
+Individual failures do not block others. Returns a summary header + per-task TSV results.
+
+- **update-task-complete-bulk**: Mark multiple tasks as complete
+  - Parameters:
+    - \`taskIds\` (required): Array of task IDs to mark as complete
+    - \`completeOn\` (optional): Completion timestamp (ISO format). Applied to all tasks.
+  - Returns: Summary header + TSV with per-task status (taskId, status, error)
+
+- **update-task-uncomplete-bulk**: Mark multiple completed tasks as incomplete
+  - Parameters:
+    - \`taskIds\` (required): Array of task IDs to mark as incomplete
+  - Returns: Summary header + TSV with per-task status
+
+- **delete-task-bulk**: Delete multiple tasks permanently
+  - Parameters:
+    - \`taskIds\` (required): Array of task IDs to delete
+  - Returns: Summary header + TSV with per-task status
+
+- **update-task-snooze-date-bulk**: Reschedule multiple tasks to a specific date
+  - Parameters:
+    - \`taskIds\` (required): Array of task IDs to reschedule
+    - \`newDay\` (required): Target date in YYYY-MM-DD format. Applied to all tasks.
+    - \`timezone\` (optional): Timezone string
+  - Returns: Summary header + TSV with per-task status
+
+- **update-task-backlog-bulk**: Move multiple tasks to the backlog
+  - Parameters:
+    - \`taskIds\` (required): Array of task IDs to move to backlog
+    - \`timezone\` (optional): Timezone string
+  - Returns: Summary header + TSV with per-task status
+
 ### Stream Operations
 - **get-streams**: Get streams for the user's group
   - Parameters: none
