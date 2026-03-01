@@ -5,6 +5,6 @@
  * when running `bun run version`
  */
 
-export const VERSION = "0.18.0";
+export const VERSION = "0.19.0";
 export const SERVER_NAME = "Sunsama API Server";
 export const PACKAGE_NAME = "mcp-sunsama";

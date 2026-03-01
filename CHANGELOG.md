@@ -1,5 +1,11 @@
 # mcp-sunsama
 
+## 0.19.0
+
+### Minor Changes
+
+- df8aef9: Add bulk task operation tools: update-task-complete-bulk, update-task-uncomplete-bulk, delete-task-bulk, update-task-snooze-date-bulk, and update-task-backlog-bulk. These tools accept an array of task IDs and perform operations sequentially, with individual failures tracked without blocking others.
+
 ## 0.18.0
 
 ### Minor Changes
