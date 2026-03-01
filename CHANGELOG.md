@@ -1,5 +1,11 @@
 # mcp-sunsama
 
+## 0.19.1
+
+### Patch Changes
+
+- Fix double login on stdio server startup that could trigger 429 rate limits
+
 ## 0.19.0
 
 ### Minor Changes
