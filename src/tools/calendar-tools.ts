@@ -7,10 +7,10 @@ import {
 } from "../schemas.js";
 import {
   formatJsonResponse,
-  withTransportClient,
   type ToolConfig,
   type ToolContext,
 } from "./shared.js";
+import { withTransportClient } from "./transport-wrapper.js";
 
 export const createCalendarEventConfig: ToolConfig<typeof createCalendarEventSchema> = {
   name: "create-calendar-event",

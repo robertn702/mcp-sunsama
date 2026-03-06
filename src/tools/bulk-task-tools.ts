@@ -13,10 +13,10 @@ import {
 import {
   executeBulk,
   formatBulkResponse,
-  withTransportClient,
   type ToolConfig,
   type ToolContext,
 } from "./shared.js";
+import { withTransportClient } from "./transport-wrapper.js";
 
 export const updateTaskCompleteBulkConfig: ToolConfig<typeof updateTaskCompleteBulkSchema> = {
   name: "update-task-complete-bulk",

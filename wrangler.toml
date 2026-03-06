@@ -8,8 +8,11 @@ bindings = [{ name = "MCP_AGENT", class_name = "SunsamaMcpAgent" }]
 
 [[migrations]]
 tag = "v1"
-new_classes = ["SunsamaMcpAgent"]
+new_sqlite_classes = ["SunsamaMcpAgent"]
 
+# The OAUTH_KV namespace must be created before first deploy:
+#   npx wrangler kv namespace create OAUTH_KV
+# Then replace the id below with the output value.
 [[kv_namespaces]]
 binding = "OAUTH_KV"
 id = "placeholder-create-with-wrangler-kv-namespace-create"

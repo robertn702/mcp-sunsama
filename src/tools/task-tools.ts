@@ -49,10 +49,10 @@ import {
   formatJsonResponse,
   formatPaginatedTsvResponse,
   formatTsvResponse,
-  withTransportClient,
   type ToolConfig,
   type ToolContext,
 } from "./shared.js";
+import { withTransportClient } from "./transport-wrapper.js";
 
 // Task Query Tools
 export const getTasksBacklogConfig: ToolConfig<typeof getTasksBacklogSchema> = {

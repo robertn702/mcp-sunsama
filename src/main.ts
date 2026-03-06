@@ -31,7 +31,6 @@ import { VERSION, SERVER_NAME } from "./constants.js";
 
   // Register all tools
   for (const tool of allTools) {
-    // @ts-expect-error -- ZodRawShapeCompat generic causes TS2589 with dynamic tool registration
     server.registerTool(
       tool.name,
       {

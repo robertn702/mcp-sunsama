@@ -1,5 +1,6 @@
 import { type GetStreamsInput, getStreamsSchema } from "../schemas.js";
-import { formatTsvResponse, withTransportClient, type ToolConfig, type ToolContext } from "./shared.js";
+import { formatTsvResponse, type ToolConfig, type ToolContext } from "./shared.js";
+import { withTransportClient } from "./transport-wrapper.js";
 
 export const getStreamsConfig: ToolConfig<typeof getStreamsSchema> = {
   name: "get-streams",

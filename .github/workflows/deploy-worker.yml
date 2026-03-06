@@ -1,0 +1,33 @@
+name: Deploy Cloudflare Worker
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "worker/**"
+      - "src/schemas.ts"
+      - "src/constants.ts"
+      - "src/utils/**"
+      - "wrangler.toml"
+      - ".github/workflows/deploy-worker.yml"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy to Cloudflare Workers
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Deploy Worker
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
