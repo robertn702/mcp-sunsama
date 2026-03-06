@@ -1,7 +1,7 @@
 import { type GetStreamsInput, getStreamsSchema } from "../schemas.js";
-import { formatTsvResponse, withTransportClient, type ToolContext } from "./shared.js";
+import { formatTsvResponse, withTransportClient, type ToolConfig, type ToolContext } from "./shared.js";
 
-export const getStreamsTool = withTransportClient({
+export const getStreamsConfig: ToolConfig<typeof getStreamsSchema> = {
   name: "get-streams",
   description:
     "Get streams for the user's group (streams are called 'channels' in the Sunsama UI)",
@@ -11,6 +11,8 @@ export const getStreamsTool = withTransportClient({
 
     return formatTsvResponse(streams);
   },
-});
+};
+export const getStreamsTool = withTransportClient(getStreamsConfig);
 
+export const streamToolConfigs = [getStreamsConfig];
 export const streamTools = [getStreamsTool];

@@ -4,8 +4,13 @@ bun.lockb
 
 # Build outputs
 dist/
+dist-worker/
 build/
 *.tsbuildinfo
+
+# Cloudflare Worker generated types
+worker-configuration.d.ts
+.wrangler/
 
 # Environment files
 .env

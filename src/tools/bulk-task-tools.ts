@@ -14,10 +14,11 @@ import {
   executeBulk,
   formatBulkResponse,
   withTransportClient,
+  type ToolConfig,
   type ToolContext,
 } from "./shared.js";
 
-export const updateTaskCompleteBulkTool = withTransportClient({
+export const updateTaskCompleteBulkConfig: ToolConfig<typeof updateTaskCompleteBulkSchema> = {
   name: "update-task-complete-bulk",
   description:
     "Mark multiple tasks as complete in a single operation. Individual failures do not block others.",
@@ -31,9 +32,10 @@ export const updateTaskCompleteBulkTool = withTransportClient({
     );
     return formatBulkResponse(result);
   },
-});
+};
+export const updateTaskCompleteBulkTool = withTransportClient(updateTaskCompleteBulkConfig);
 
-export const updateTaskUncompleteBulkTool = withTransportClient({
+export const updateTaskUncompleteBulkConfig: ToolConfig<typeof updateTaskUncompleteBulkSchema> = {
   name: "update-task-uncomplete-bulk",
   description:
     "Mark multiple completed tasks as incomplete in a single operation. Individual failures do not block others.",
@@ -47,9 +49,10 @@ export const updateTaskUncompleteBulkTool = withTransportClient({
     );
     return formatBulkResponse(result);
   },
-});
+};
+export const updateTaskUncompleteBulkTool = withTransportClient(updateTaskUncompleteBulkConfig);
 
-export const deleteTaskBulkTool = withTransportClient({
+export const deleteTaskBulkConfig: ToolConfig<typeof deleteTaskBulkSchema> = {
   name: "delete-task-bulk",
   description:
     "Delete multiple tasks permanently in a single operation. Individual failures do not block others.",
@@ -63,9 +66,10 @@ export const deleteTaskBulkTool = withTransportClient({
     );
     return formatBulkResponse(result);
   },
-});
+};
+export const deleteTaskBulkTool = withTransportClient(deleteTaskBulkConfig);
 
-export const updateTaskSnoozeDateBulkTool = withTransportClient({
+export const updateTaskSnoozeDateBulkConfig: ToolConfig<typeof updateTaskSnoozeDateBulkSchema> = {
   name: "update-task-snooze-date-bulk",
   description:
     "Reschedule multiple tasks to a specific date in a single operation. Individual failures do not block others.",
@@ -84,9 +88,10 @@ export const updateTaskSnoozeDateBulkTool = withTransportClient({
     );
     return formatBulkResponse(result);
   },
-});
+};
+export const updateTaskSnoozeDateBulkTool = withTransportClient(updateTaskSnoozeDateBulkConfig);
 
-export const updateTaskBacklogBulkTool = withTransportClient({
+export const updateTaskBacklogBulkConfig: ToolConfig<typeof updateTaskBacklogBulkSchema> = {
   name: "update-task-backlog-bulk",
   description:
     "Move multiple tasks to the backlog in a single operation. Individual failures do not block others.",
@@ -105,7 +110,16 @@ export const updateTaskBacklogBulkTool = withTransportClient({
     );
     return formatBulkResponse(result);
   },
-});
+};
+export const updateTaskBacklogBulkTool = withTransportClient(updateTaskBacklogBulkConfig);
+
+export const bulkTaskToolConfigs = [
+  updateTaskCompleteBulkConfig,
+  updateTaskUncompleteBulkConfig,
+  deleteTaskBulkConfig,
+  updateTaskSnoozeDateBulkConfig,
+  updateTaskBacklogBulkConfig,
+];
 
 export const bulkTaskTools = [
   updateTaskCompleteBulkTool,

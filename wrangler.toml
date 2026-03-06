@@ -1,0 +1,15 @@
+name = "mcp-sunsama"
+main = "worker/index.ts"
+compatibility_date = "2025-04-01"
+compatibility_flags = ["nodejs_compat"]
+
+[durable_objects]
+bindings = [{ name = "MCP_AGENT", class_name = "SunsamaMcpAgent" }]
+
+[[migrations]]
+tag = "v1"
+new_classes = ["SunsamaMcpAgent"]
+
+[[kv_namespaces]]
+binding = "OAUTH_KV"
+id = "placeholder-create-with-wrangler-kv-namespace-create"

@@ -26,11 +26,16 @@
     "changeset": "changeset",
     "version": "changeset version && bun scripts/sync-version.ts",
     "release": "npm run build && changeset publish",
-    "prepublishOnly": "npm run build:clean"
+    "prepublishOnly": "npm run build:clean",
+    "worker:dev": "wrangler dev",
+    "worker:deploy": "wrangler deploy",
+    "worker:types": "wrangler types"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "1.18.2",
+    "@cloudflare/workers-oauth-provider": "^0.3.0",
+    "@modelcontextprotocol/sdk": "1.26.0",
     "@types/papaparse": "^5.3.16",
+    "agents": "^0.7.5",
     "cors": "^2.8.5",
     "express": "^5.1.0",
     "papaparse": "^5.5.3",
@@ -39,10 +44,12 @@
   },
   "devDependencies": {
     "@changesets/cli": "^2.29.7",
+    "@cloudflare/workers-types": "^4.20260305.1",
     "@types/bun": "latest",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
-    "typescript": "^5"
+    "typescript": "^5",
+    "wrangler": "^4.71.0"
   },
   "keywords": [
     "mcp",

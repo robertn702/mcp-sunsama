@@ -9,24 +9,29 @@ import { VERSION, SERVER_NAME } from "./constants.js";
 
 // Async IIFE for top-level await and error handling
 (async () => {
-  const server = new McpServer({
-    name: SERVER_NAME,
-    version: VERSION,
-    instructions: [
-      "This MCP server provides access to the Sunsama API for task and project management.",
-      "Supports both stdio and HTTP stream transports.",
-      "",
-      "Available tools:",
-      ...allTools.map((t) => `- ${t.name}: ${t.description}`),
-      "",
-      "Authentication:",
-      "- Stdio transport: Uses SUNSAMA_EMAIL + SUNSAMA_PASSWORD, or SUNSAMA_SESSION_TOKEN",
-      "- HTTP transport: HTTP Basic Auth (email:password) or Bearer token",
-    ].join("\n"),
-  });
+  const server = new McpServer(
+    {
+      name: SERVER_NAME,
+      version: VERSION,
+    },
+    {
+      instructions: [
+        "This MCP server provides access to the Sunsama API for task and project management.",
+        "Supports both stdio and HTTP stream transports.",
+        "",
+        "Available tools:",
+        ...allTools.map((t) => `- ${t.name}: ${t.description}`),
+        "",
+        "Authentication:",
+        "- Stdio transport: Uses SUNSAMA_EMAIL + SUNSAMA_PASSWORD, or SUNSAMA_SESSION_TOKEN",
+        "- HTTP transport: HTTP Basic Auth (email:password) or Bearer token",
+      ].join("\n"),
+    },
+  );
 
   // Register all tools
-  allTools.forEach((tool) => {
+  for (const tool of allTools) {
+    // @ts-expect-error -- ZodRawShapeCompat generic causes TS2589 with dynamic tool registration
     server.registerTool(
       tool.name,
       {
@@ -35,7 +40,7 @@ import { VERSION, SERVER_NAME } from "./constants.js";
       },
       tool.execute,
     );
-  });
+  }
 
   // Register resources
   server.registerResource(

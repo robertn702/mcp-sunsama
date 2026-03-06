@@ -31,8 +31,11 @@
   },
   "exclude": [
     "dist",
+    "dist-worker",
     "node_modules",
     "__tests__",
-    "scripts"
+    "scripts",
+    "worker",
+    "worker-configuration.d.ts"
   ]
 }

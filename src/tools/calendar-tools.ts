@@ -8,10 +8,11 @@ import {
 import {
   formatJsonResponse,
   withTransportClient,
+  type ToolConfig,
   type ToolContext,
 } from "./shared.js";
 
-export const createCalendarEventTool = withTransportClient({
+export const createCalendarEventConfig: ToolConfig<typeof createCalendarEventSchema> = {
   name: "create-calendar-event",
   description: "Create a new calendar event in Sunsama",
   parameters: createCalendarEventSchema,
@@ -55,9 +56,10 @@ export const createCalendarEventTool = withTransportClient({
       updatedFields: result.updatedFields,
     });
   },
-});
+};
+export const createCalendarEventTool = withTransportClient(createCalendarEventConfig);
 
-export const updateCalendarEventTool = withTransportClient({
+export const updateCalendarEventConfig: ToolConfig<typeof updateCalendarEventSchema> = {
   name: "update-calendar-event",
   description:
     "Update an existing calendar event. Requires the full CalendarEventUpdateData object — fetch the event first to get all required fields.",
@@ -83,7 +85,13 @@ export const updateCalendarEventTool = withTransportClient({
       updatedFields: result.updatedFields,
     });
   },
-});
+};
+export const updateCalendarEventTool = withTransportClient(updateCalendarEventConfig);
+
+export const calendarToolConfigs = [
+  createCalendarEventConfig,
+  updateCalendarEventConfig,
+];
 
 export const calendarTools = [
   createCalendarEventTool,

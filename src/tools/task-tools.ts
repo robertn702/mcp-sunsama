@@ -50,11 +50,12 @@ import {
   formatPaginatedTsvResponse,
   formatTsvResponse,
   withTransportClient,
+  type ToolConfig,
   type ToolContext,
 } from "./shared.js";
 
 // Task Query Tools
-export const getTasksBacklogTool = withTransportClient({
+export const getTasksBacklogConfig: ToolConfig<typeof getTasksBacklogSchema> = {
   name: "get-tasks-backlog",
   description: "Get tasks from the backlog",
   parameters: getTasksBacklogSchema,
@@ -64,9 +65,10 @@ export const getTasksBacklogTool = withTransportClient({
 
     return formatTsvResponse(trimmedTasks);
   },
-});
+};
+export const getTasksBacklogTool = withTransportClient(getTasksBacklogConfig);
 
-export const getTasksByDayTool = withTransportClient({
+export const getTasksByDayConfig: ToolConfig<typeof getTasksByDaySchema> = {
   name: "get-tasks-by-day",
   description:
     "Get tasks for a specific day with optional filtering by completion status",
@@ -75,7 +77,6 @@ export const getTasksByDayTool = withTransportClient({
     { day, timezone, completionFilter = "all" }: GetTasksByDayInput,
     context: ToolContext,
   ) => {
-    // If no timezone provided, get the user's default timezone
     let resolvedTimezone = timezone;
     if (!resolvedTimezone) {
       resolvedTimezone = await context.client.getUserTimezone();
@@ -87,9 +88,10 @@ export const getTasksByDayTool = withTransportClient({
 
     return formatTsvResponse(trimmedTasks);
   },
-});
+};
+export const getTasksByDayTool = withTransportClient(getTasksByDayConfig);
 
-export const getArchivedTasksTool = withTransportClient({
+export const getArchivedTasksConfig: ToolConfig<typeof getArchivedTasksSchema> = {
   name: "get-archived-tasks",
   description: "Get archived tasks with optional pagination",
   parameters: getArchivedTasksSchema,
@@ -116,9 +118,10 @@ export const getArchivedTasksTool = withTransportClient({
 
     return formatPaginatedTsvResponse(trimmedTasks, paginationInfo);
   },
-});
+};
+export const getArchivedTasksTool = withTransportClient(getArchivedTasksConfig);
 
-export const getTaskByIdTool = withTransportClient({
+export const getTaskByIdConfig: ToolConfig<typeof getTaskByIdSchema> = {
   name: "get-task-by-id",
   description: "Get a specific task by its ID",
   parameters: getTaskByIdSchema,
@@ -127,10 +130,11 @@ export const getTaskByIdTool = withTransportClient({
 
     return formatJsonResponse(task);
   },
-});
+};
+export const getTaskByIdTool = withTransportClient(getTaskByIdConfig);
 
 // Task Lifecycle Tools
-export const createTaskTool = withTransportClient({
+export const createTaskConfig: ToolConfig<typeof createTaskSchema> = {
   name: "create-task",
   description: "Create a new task with optional properties",
   parameters: createTaskSchema,
@@ -168,9 +172,10 @@ export const createTaskTool = withTransportClient({
       updatedFields: result.updatedFields,
     });
   },
-});
+};
+export const createTaskTool = withTransportClient(createTaskConfig);
 
-export const deleteTaskTool = withTransportClient({
+export const deleteTaskConfig: ToolConfig<typeof deleteTaskSchema> = {
   name: "delete-task",
   description: "Delete a task permanently",
   parameters: deleteTaskSchema,
@@ -191,10 +196,11 @@ export const deleteTaskTool = withTransportClient({
       updatedFields: result.updatedFields,
     });
   },
-});
+};
+export const deleteTaskTool = withTransportClient(deleteTaskConfig);
 
 // Task Update Tools
-export const updateTaskCompleteTool = withTransportClient({
+export const updateTaskCompleteConfig: ToolConfig<typeof updateTaskCompleteSchema> = {
   name: "update-task-complete",
   description: "Mark a task as complete with optional completion timestamp",
   parameters: updateTaskCompleteSchema,
@@ -215,9 +221,10 @@ export const updateTaskCompleteTool = withTransportClient({
       updatedFields: result.updatedFields,
     });
   },
-});
+};
+export const updateTaskCompleteTool = withTransportClient(updateTaskCompleteConfig);
 
-export const updateTaskUncompleteTool = withTransportClient({
+export const updateTaskUncompleteConfig: ToolConfig<typeof updateTaskUncompleteSchema> = {
   name: "update-task-uncomplete",
   description: "Mark a completed task as incomplete",
   parameters: updateTaskUncompleteSchema,
@@ -237,9 +244,10 @@ export const updateTaskUncompleteTool = withTransportClient({
       updatedFields: result.updatedFields,
     });
   },
-});
+};
+export const updateTaskUncompleteTool = withTransportClient(updateTaskUncompleteConfig);
 
-export const updateTaskSnoozeDateTool = withTransportClient({
+export const updateTaskSnoozeDateConfig: ToolConfig<typeof updateTaskSnoozeDateSchema> = {
   name: "update-task-snooze-date",
   description:
     "Update task snooze date to reschedule tasks or move them to backlog",
@@ -268,9 +276,10 @@ export const updateTaskSnoozeDateTool = withTransportClient({
       updatedFields: result.updatedFields,
     });
   },
-});
+};
+export const updateTaskSnoozeDateTool = withTransportClient(updateTaskSnoozeDateConfig);
 
-export const updateTaskBacklogTool = withTransportClient({
+export const updateTaskBacklogConfig: ToolConfig<typeof updateTaskBacklogSchema> = {
   name: "update-task-backlog",
   description: "Move a task to the backlog",
   parameters: updateTaskBacklogSchema,
@@ -297,9 +306,10 @@ export const updateTaskBacklogTool = withTransportClient({
       updatedFields: result.updatedFields,
     });
   },
-});
+};
+export const updateTaskBacklogTool = withTransportClient(updateTaskBacklogConfig);
 
-export const updateTaskPlannedTimeTool = withTransportClient({
+export const updateTaskPlannedTimeConfig: ToolConfig<typeof updateTaskPlannedTimeSchema> = {
   name: "update-task-planned-time",
   description: "Update the planned time (time estimate) for a task",
   parameters: updateTaskPlannedTimeSchema,
@@ -321,9 +331,10 @@ export const updateTaskPlannedTimeTool = withTransportClient({
       updatedFields: result.updatedFields,
     });
   },
-});
+};
+export const updateTaskPlannedTimeTool = withTransportClient(updateTaskPlannedTimeConfig);
 
-export const updateTaskNotesTool = withTransportClient({
+export const updateTaskNotesConfig: ToolConfig<typeof updateTaskNotesSchema> = {
   name: "update-task-notes",
   description: "Update the notes content for a task",
   parameters: updateTaskNotesSchema,
@@ -363,9 +374,10 @@ export const updateTaskNotesTool = withTransportClient({
       updatedFields: result.updatedFields,
     });
   },
-});
+};
+export const updateTaskNotesTool = withTransportClient(updateTaskNotesConfig);
 
-export const updateTaskDueDateTool = withTransportClient({
+export const updateTaskDueDateConfig: ToolConfig<typeof updateTaskDueDateSchema> = {
   name: "update-task-due-date",
   description: "Update the due date for a task",
   parameters: updateTaskDueDateSchema,
@@ -387,9 +399,10 @@ export const updateTaskDueDateTool = withTransportClient({
       updatedFields: result.updatedFields,
     });
   },
-});
+};
+export const updateTaskDueDateTool = withTransportClient(updateTaskDueDateConfig);
 
-export const updateTaskTextTool = withTransportClient({
+export const updateTaskTextConfig: ToolConfig<typeof updateTaskTextSchema> = {
   name: "update-task-text",
   description: "Update the text/title of a task",
   parameters: updateTaskTextSchema,
@@ -419,9 +432,10 @@ export const updateTaskTextTool = withTransportClient({
       updatedFields: result.updatedFields,
     });
   },
-});
+};
+export const updateTaskTextTool = withTransportClient(updateTaskTextConfig);
 
-export const updateTaskStreamTool = withTransportClient({
+export const updateTaskStreamConfig: ToolConfig<typeof updateTaskStreamSchema> = {
   name: "update-task-stream",
   description: "Update the stream/channel assignment for a task",
   parameters: updateTaskStreamSchema,
@@ -443,10 +457,11 @@ export const updateTaskStreamTool = withTransportClient({
       updatedFields: result.updatedFields,
     });
   },
-});
+};
+export const updateTaskStreamTool = withTransportClient(updateTaskStreamConfig);
 
 // Subtask Management Tools
-export const createSubtasksTool = withTransportClient({
+export const createSubtasksConfig: ToolConfig<typeof createSubtasksSchema> = {
   name: "create-subtasks",
   description: "Create multiple subtasks for a task (low-level API for bulk operations)",
   parameters: createSubtasksSchema,
@@ -469,9 +484,10 @@ export const createSubtasksTool = withTransportClient({
       updatedFields: result.updatedFields,
     });
   },
-});
+};
+export const createSubtasksTool = withTransportClient(createSubtasksConfig);
 
-export const updateSubtaskTitleTool = withTransportClient({
+export const updateSubtaskTitleConfig: ToolConfig<typeof updateSubtaskTitleSchema> = {
   name: "update-subtask-title",
   description: "Update the title of a subtask",
   parameters: updateSubtaskTitleSchema,
@@ -494,9 +510,10 @@ export const updateSubtaskTitleTool = withTransportClient({
       updatedFields: result.updatedFields,
     });
   },
-});
+};
+export const updateSubtaskTitleTool = withTransportClient(updateSubtaskTitleConfig);
 
-export const completeSubtaskTool = withTransportClient({
+export const completeSubtaskConfig: ToolConfig<typeof completeSubtaskSchema> = {
   name: "complete-subtask",
   description: "Mark a subtask as complete with optional completion timestamp",
   parameters: completeSubtaskSchema,
@@ -520,9 +537,10 @@ export const completeSubtaskTool = withTransportClient({
       updatedFields: result.updatedFields,
     });
   },
-});
+};
+export const completeSubtaskTool = withTransportClient(completeSubtaskConfig);
 
-export const uncompleteSubtaskTool = withTransportClient({
+export const uncompleteSubtaskConfig: ToolConfig<typeof uncompleteSubtaskSchema> = {
   name: "uncomplete-subtask",
   description: "Mark a subtask as incomplete (uncomplete it)",
   parameters: uncompleteSubtaskSchema,
@@ -544,9 +562,10 @@ export const uncompleteSubtaskTool = withTransportClient({
       updatedFields: result.updatedFields,
     });
   },
-});
+};
+export const uncompleteSubtaskTool = withTransportClient(uncompleteSubtaskConfig);
 
-export const addSubtaskTool = withTransportClient({
+export const addSubtaskConfig: ToolConfig<typeof addSubtaskSchema> = {
   name: "add-subtask",
   description: "Convenience method to create a subtask with a title in one call (recommended for single subtask creation)",
   parameters: addSubtaskSchema,
@@ -565,9 +584,10 @@ export const addSubtaskTool = withTransportClient({
       updatedFields: result.result.updatedFields,
     });
   },
-});
+};
+export const addSubtaskTool = withTransportClient(addSubtaskConfig);
 
-export const reorderTaskTool = withTransportClient({
+export const reorderTaskConfig: ToolConfig<typeof reorderTaskSchema> = {
   name: "reorder-task",
   description:
     "Reorder a task within a day by moving it to a specific 0-based position (0 = top)",
@@ -593,21 +613,42 @@ export const reorderTaskTool = withTransportClient({
       updatedTaskIds: result.updatedTaskIds,
     });
   },
-});
+};
+export const reorderTaskTool = withTransportClient(reorderTaskConfig);
 
-// Export all task tools
+// Export all task tool configs (for worker reuse)
+export const taskToolConfigs = [
+  getTasksBacklogConfig,
+  getTasksByDayConfig,
+  getArchivedTasksConfig,
+  getTaskByIdConfig,
+  createTaskConfig,
+  deleteTaskConfig,
+  updateTaskCompleteConfig,
+  updateTaskUncompleteConfig,
+  updateTaskSnoozeDateConfig,
+  updateTaskBacklogConfig,
+  updateTaskPlannedTimeConfig,
+  updateTaskNotesConfig,
+  updateTaskDueDateConfig,
+  updateTaskTextConfig,
+  updateTaskStreamConfig,
+  createSubtasksConfig,
+  updateSubtaskTitleConfig,
+  completeSubtaskConfig,
+  uncompleteSubtaskConfig,
+  addSubtaskConfig,
+  reorderTaskConfig,
+];
+
+// Export all task tools (wrapped for Node.js transport)
 export const taskTools = [
-  // Query tools
   getTasksBacklogTool,
   getTasksByDayTool,
   getArchivedTasksTool,
   getTaskByIdTool,
-
-  // Lifecycle tools
   createTaskTool,
   deleteTaskTool,
-
-  // Update tools
   updateTaskCompleteTool,
   updateTaskUncompleteTool,
   updateTaskSnoozeDateTool,
@@ -617,14 +658,10 @@ export const taskTools = [
   updateTaskDueDateTool,
   updateTaskTextTool,
   updateTaskStreamTool,
-
-  // Subtask management tools
   createSubtasksTool,
   updateSubtaskTitleTool,
   completeSubtaskTool,
   uncompleteSubtaskTool,
   addSubtaskTool,
-
-  // Scheduling tools
   reorderTaskTool,
 ];
