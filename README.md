@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/robertn702-mcp-sunsama-badge.png)](https://mseep.ai/app/robertn702-mcp-sunsama)
+
 # Sunsama MCP Server
 
 A Model Context Protocol (MCP) server that provides comprehensive task management capabilities through the Sunsama API. This server enables AI assistants to access Sunsama tasks, create new tasks, mark tasks complete, and manage your productivity workflow.
